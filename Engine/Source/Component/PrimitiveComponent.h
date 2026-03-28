@@ -20,26 +20,15 @@ class ENGINE_API UPrimitiveComponent : public USceneComponent
 public:
 	DECLARE_RTTI(UPrimitiveComponent, USceneComponent)
 
-	CPrimitiveBase* GetPrimitive() const { return Primitive.get(); }
+	virtual FBoxSphereBounds GetWorldBounds() const { return Bounds; };
+	virtual void UpdateBounds();
+	virtual FBoxSphereBounds GetLocalBounds() const;
+	virtual FBoxSphereBounds CalcBounds(const FMatrix& LocalToWorld) const;
 
-	void SetMaterial(FMaterial* InMaterial) { Material = InMaterial; }
-	FMaterial* GetMaterial() const { return Material; }
-
-	virtual FBoxSphereBounds GetWorldBounds() const;
-
-	void UpdateLocalBound();
-
-	FString GetPrimitiveFileName() const 
-	{ 
-		if (Primitive) return Primitive->GetPrimitiveFileName();
-		else return ""; 
-	}
-
-protected:
-	std::shared_ptr<CPrimitiveBase> Primitive;
-	FMaterial* Material = nullptr;
-	bool bDrawDebugBounds = true;
-public:
 	bool ShouldDrawDebugBounds() const { return bDrawDebugBounds; }
 	void SetDrawDebugBounds(bool bEnable) { bDrawDebugBounds = bEnable; }
+
+protected:
+	FBoxSphereBounds Bounds;
+	bool bDrawDebugBounds = true;
 };
