@@ -522,6 +522,7 @@
     <ClInclude Include="Source\Actor\SubUVActor.h" />
     <ClInclude Include="Source\Actor\TextActor.h" />
     <ClInclude Include="Source\Actor\SkySphereActor.h" />
+    <ClInclude Include="Source\Object\ObjectIterator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
