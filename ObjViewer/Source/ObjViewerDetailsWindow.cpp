@@ -88,6 +88,18 @@ namespace
 
 		return Buffer;
 	}
+
+	void DrawBenchmarkStats(const char* Label, const FObjViewerBenchmarkStats& Stats)
+	{
+		ImGui::Text("%s", Label);
+		ImGui::SameLine(120.0f);
+		ImGui::Text(
+			"avg %.3f ms | min %.3f | max %.3f | last %.3f",
+			Stats.AverageMilliseconds,
+			Stats.MinMilliseconds,
+			Stats.MaxMilliseconds,
+			Stats.LastMilliseconds);
+	}
 }
 
 void FObjViewerDetailsWindow::Render(FObjViewerEngine* Engine)
@@ -165,6 +177,57 @@ void FObjViewerDetailsWindow::Render(FObjViewerEngine* Engine)
 		ImGui::Text("Uniform Scale");
 		ImGui::SameLine(120.0f);
 		ImGui::Text("%.2f", State.LastImportSummary.UniformScale);
+	}
+
+	if (ImGui::CollapsingHeader("Benchmark", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		FObjViewerLoadBenchmarkState& BenchmarkState = Engine->GetMutableBenchmarkState();
+		DrawTextValue("Source OBJ", BenchmarkState.SourceObjPath);
+		DrawTextValue("OBJ Size", FormatFileSize(BenchmarkState.SourceObjFileSizeBytes));
+		DrawTextValue("Benchmark .Model", BenchmarkState.BenchmarkModelPath);
+		DrawTextValue("Model Size", FormatFileSize(BenchmarkState.BenchmarkModelFileSizeBytes));
+
+		ImGui::DragInt("Iterations", &BenchmarkState.IterationCount, 1.0f, 1, 50);
+		ImGui::Checkbox("Rebuild .Model Before Run", &BenchmarkState.bRebuildBenchmarkModelBeforeRun);
+
+		if (ImGui::Button("Run Benchmark"))
+		{
+			Engine->RunBenchmark();
+		}
+
+		if (!BenchmarkState.StatusMessage.empty())
+		{
+			const ImVec4 MessageColor = BenchmarkState.bLastRunSucceeded
+				? ImVec4(0.55f, 0.85f, 0.55f, 1.0f)
+				: ImVec4(1.0f, 0.45f, 0.45f, 1.0f);
+			ImGui::TextColored(MessageColor, "%s", BenchmarkState.StatusMessage.c_str());
+		}
+
+		ImGui::TextWrapped("Read Only shows raw file I/O. Full Load shows the actual mesh load path including file read, OBJ parsing or .Model deserialization, and static mesh creation.");
+
+		if (BenchmarkState.bHasResults)
+		{
+			DrawBenchmarkStats("OBJ Read", BenchmarkState.ObjReadStats);
+			DrawBenchmarkStats("Model Read", BenchmarkState.ModelReadStats);
+			DrawBenchmarkStats("OBJ Full Load", BenchmarkState.ObjFullLoadStats);
+			DrawBenchmarkStats("Model Full Load", BenchmarkState.ModelFullLoadStats);
+
+			if (BenchmarkState.ModelReadStats.AverageMilliseconds > 0.0)
+			{
+				const double ReadSpeedup = BenchmarkState.ObjReadStats.AverageMilliseconds / BenchmarkState.ModelReadStats.AverageMilliseconds;
+				ImGui::Text("Read Speedup");
+				ImGui::SameLine(120.0f);
+				ImGui::Text("%.2fx faster than OBJ", ReadSpeedup);
+			}
+
+			if (BenchmarkState.ModelFullLoadStats.AverageMilliseconds > 0.0)
+			{
+				const double LoadSpeedup = BenchmarkState.ObjFullLoadStats.AverageMilliseconds / BenchmarkState.ModelFullLoadStats.AverageMilliseconds;
+				ImGui::Text("Load Speedup");
+				ImGui::SameLine(120.0f);
+				ImGui::Text("%.2fx faster than OBJ", LoadSpeedup);
+			}
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Viewport", ImGuiTreeNodeFlags_DefaultOpen))

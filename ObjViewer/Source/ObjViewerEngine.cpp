@@ -1,8 +1,11 @@
 #include "ObjViewerEngine.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <filesystem>
+#include <fstream>
+#include <limits>
 
 #include "ObjViewerShell.h"
 #include "ObjViewerViewportClient.h"
@@ -128,6 +131,20 @@ namespace
 		return MaterialSlotNames;
 	}
 
+	FString GetAxisToken(EObjImportAxis Axis)
+	{
+		switch (Axis)
+		{
+		case EObjImportAxis::PosX: return "PosX";
+		case EObjImportAxis::NegX: return "NegX";
+		case EObjImportAxis::PosY: return "PosY";
+		case EObjImportAxis::NegY: return "NegY";
+		case EObjImportAxis::PosZ: return "PosZ";
+		case EObjImportAxis::NegZ: return "NegZ";
+		default: return "PosX";
+		}
+	}
+
 	FStaticMesh BuildBakedMeshCopy(const FStaticMesh& SourceMesh, float UniformScale)
 	{
 		const float BakedScale = (std::max)(UniformScale, 0.01f);
@@ -150,6 +167,93 @@ namespace
 
 		BakedMesh.bIsDirty = true;
 		return BakedMesh;
+	}
+
+	uint64 TryGetFileSize(const FString& FilePath)
+	{
+		if (FilePath.empty())
+		{
+			return 0;
+		}
+
+		const std::filesystem::path AbsolutePath = std::filesystem::path(FPaths::ToWide(FPaths::ToAbsolutePath(FilePath))).lexically_normal();
+		std::error_code ErrorCode;
+		const uint64 FileSize = std::filesystem::file_size(AbsolutePath, ErrorCode);
+		return ErrorCode ? 0 : FileSize;
+	}
+
+	bool ReadFileIntoBuffer(const FString& FilePath, TArray<char>& OutBuffer)
+	{
+		const FString AbsolutePath = FPaths::ToAbsolutePath(FilePath);
+		const std::filesystem::path AbsoluteFsPath = std::filesystem::path(FPaths::ToWide(AbsolutePath)).lexically_normal();
+		std::ifstream File(AbsoluteFsPath, std::ios::binary | std::ios::ate);
+		if (!File.is_open())
+		{
+			return false;
+		}
+
+		const std::streamsize FileSize = File.tellg();
+		if (FileSize < 0)
+		{
+			return false;
+		}
+
+		File.seekg(0, std::ios::beg);
+		OutBuffer.resize(static_cast<size_t>(FileSize));
+		if (FileSize == 0)
+		{
+			return true;
+		}
+
+		return File.read(OutBuffer.data(), FileSize).good();
+	}
+
+	FString BuildBenchmarkModelPath(const FObjViewerModelState& ModelState)
+	{
+		if (ModelState.SourceFilePath.empty())
+		{
+			return "";
+		}
+
+		const std::filesystem::path SourcePath(FPaths::ToWide(ModelState.SourceFilePath));
+		const FString SourceStem = WideToUtf8(SourcePath.stem().wstring());
+		const FString ForwardToken = GetAxisToken(ModelState.LastImportSummary.ForwardAxis);
+		const FString UpToken = GetAxisToken(ModelState.LastImportSummary.UpAxis);
+		const std::wstring FileName = FPaths::ToWide(SourceStem + "__Benchmark__F_" + ForwardToken + "__U_" + UpToken + ".Model");
+		const std::filesystem::path BenchmarkPath = (FPaths::MeshDir() / L"Benchmarks" / FileName).lexically_normal();
+		return WideToUtf8(BenchmarkPath.wstring());
+	}
+
+	double GetElapsedMilliseconds(
+		const std::chrono::steady_clock::time_point& StartTime,
+		const std::chrono::steady_clock::time_point& EndTime)
+	{
+		return std::chrono::duration<double, std::milli>(EndTime - StartTime).count();
+	}
+
+	FObjViewerBenchmarkStats BuildBenchmarkStats(const TArray<double>& Samples)
+	{
+		FObjViewerBenchmarkStats Stats;
+		if (Samples.empty())
+		{
+			return Stats;
+		}
+
+		Stats.SampleCount = static_cast<int32>(Samples.size());
+		Stats.LastMilliseconds = Samples.back();
+		Stats.MinMilliseconds = (std::numeric_limits<double>::max)();
+		Stats.MaxMilliseconds = 0.0;
+
+		double TotalMilliseconds = 0.0;
+		for (double Sample : Samples)
+		{
+			Stats.MinMilliseconds = (std::min)(Stats.MinMilliseconds, Sample);
+			Stats.MaxMilliseconds = (std::max)(Stats.MaxMilliseconds, Sample);
+			TotalMilliseconds += Sample;
+		}
+
+		Stats.AverageMilliseconds = TotalMilliseconds / static_cast<double>(Samples.size());
+		return Stats;
 	}
 
 	FVector GetLoadedModelWorldCenter(const FObjViewerModelState& ModelState)
@@ -335,6 +439,25 @@ bool FObjViewerEngine::ExportLoadedModelAsModel(const FString& FilePath) const
 	return bSaved;
 }
 
+bool FObjViewerEngine::ExportLoadedModelAsBenchmarkModel(const FString& FilePath) const
+{
+	if (FilePath.empty() || !HasLoadedModel() || ModelState.Mesh == nullptr || ModelState.Mesh->GetRenderData() == nullptr)
+	{
+		return false;
+	}
+
+	FStaticMesh BenchmarkMesh = BuildBakedMeshCopy(*ModelState.Mesh->GetRenderData(), 1.0f);
+	const TArray<FString> MaterialSlotNames = BuildMaterialSlotNames(ModelState.Mesh);
+	TArray<FModelMaterialInfo> MaterialInfos;
+	const bool bBuiltMaterialInfos = FObjManager::BuildModelMaterialInfosFromObj(ModelState.SourceFilePath, FilePath, MaterialSlotNames, MaterialInfos);
+	if (!bBuiltMaterialInfos)
+	{
+		UE_LOG("[ObjViewer] Falling back to default embedded material metadata for benchmark export: %s", ModelState.SourceFilePath.c_str());
+	}
+
+	return FObjManager::SaveModelStaticMeshAsset(FilePath, BenchmarkMesh, MaterialInfos);
+}
+
 bool FObjViewerEngine::ReloadLoadedModel()
 {
 	if (ModelState.SourceFilePath.empty())
@@ -345,6 +468,129 @@ bool FObjViewerEngine::ReloadLoadedModel()
 	FObjImportSummary ReloadOptions = ModelState.LastImportSummary;
 	ReloadOptions.ImportSource = "Reload";
 	return LoadModelFromFile(ModelState.SourceFilePath, ReloadOptions);
+}
+
+bool FObjViewerEngine::RunBenchmark()
+{
+	LoadBenchmarkState.bHasResults = false;
+	LoadBenchmarkState.bLastRunSucceeded = false;
+	LoadBenchmarkState.ObjReadStats = {};
+	LoadBenchmarkState.ModelReadStats = {};
+	LoadBenchmarkState.ObjFullLoadStats = {};
+	LoadBenchmarkState.ModelFullLoadStats = {};
+	LoadBenchmarkState.StatusMessage.clear();
+
+	if (!HasLoadedModel() || ModelState.SourceFilePath.empty())
+	{
+		LoadBenchmarkState.StatusMessage = "Load an OBJ first.";
+		return false;
+	}
+
+	const int32 IterationCount = (std::max)(LoadBenchmarkState.IterationCount, 1);
+	const FString BenchmarkModelPath = BuildBenchmarkModelPath(ModelState);
+	if (BenchmarkModelPath.empty())
+	{
+		LoadBenchmarkState.StatusMessage = "Failed to resolve benchmark .Model path.";
+		return false;
+	}
+
+	LoadBenchmarkState.SourceObjPath = ModelState.SourceFilePath;
+	LoadBenchmarkState.BenchmarkModelPath = BenchmarkModelPath;
+	LoadBenchmarkState.SourceObjFileSizeBytes = TryGetFileSize(ModelState.SourceFilePath);
+
+	const FString AbsoluteBenchmarkModelPath = FPaths::ToAbsolutePath(BenchmarkModelPath);
+	const std::filesystem::path BenchmarkModelFsPath = std::filesystem::path(FPaths::ToWide(AbsoluteBenchmarkModelPath)).lexically_normal();
+	std::error_code ErrorCode;
+	const bool bBenchmarkModelExists = std::filesystem::exists(BenchmarkModelFsPath, ErrorCode) && !ErrorCode;
+
+	if (LoadBenchmarkState.bRebuildBenchmarkModelBeforeRun || !bBenchmarkModelExists)
+	{
+		if (!ExportLoadedModelAsBenchmarkModel(BenchmarkModelPath))
+		{
+			LoadBenchmarkState.StatusMessage = "Failed to build benchmark .Model file.";
+			return false;
+		}
+	}
+
+	LoadBenchmarkState.BenchmarkModelFileSizeBytes = TryGetFileSize(BenchmarkModelPath);
+
+	TArray<double> ObjSamples;
+	TArray<double> ModelSamples;
+	ObjSamples.reserve(static_cast<size_t>(IterationCount));
+	ModelSamples.reserve(static_cast<size_t>(IterationCount));
+	TArray<char> FileBuffer;
+
+	for (int32 IterationIndex = 0; IterationIndex < IterationCount; ++IterationIndex)
+	{
+		const auto ObjStartTime = std::chrono::steady_clock::now();
+		const bool bReadObj = ReadFileIntoBuffer(ModelState.SourceFilePath, FileBuffer);
+		const auto ObjEndTime = std::chrono::steady_clock::now();
+		if (!bReadObj)
+		{
+			LoadBenchmarkState.StatusMessage = "OBJ file read failed.";
+			return false;
+		}
+
+		ObjSamples.push_back(GetElapsedMilliseconds(ObjStartTime, ObjEndTime));
+
+		const auto ModelStartTime = std::chrono::steady_clock::now();
+		const bool bReadModel = ReadFileIntoBuffer(BenchmarkModelPath, FileBuffer);
+		const auto ModelEndTime = std::chrono::steady_clock::now();
+		if (!bReadModel)
+		{
+			LoadBenchmarkState.StatusMessage = "Binary file read failed.";
+			return false;
+		}
+
+		ModelSamples.push_back(GetElapsedMilliseconds(ModelStartTime, ModelEndTime));
+	}
+
+	LoadBenchmarkState.ObjReadStats = BuildBenchmarkStats(ObjSamples);
+	LoadBenchmarkState.ModelReadStats = BuildBenchmarkStats(ModelSamples);
+
+	FObjLoadOptions LoadOptions;
+	LoadOptions.bUseLegacyObjConversion = false;
+	LoadOptions.ForwardAxis = ModelState.LastImportSummary.ForwardAxis;
+	LoadOptions.UpAxis = ModelState.LastImportSummary.UpAxis;
+
+	TArray<double> ObjFullLoadSamples;
+	TArray<double> ModelFullLoadSamples;
+	ObjFullLoadSamples.reserve(static_cast<size_t>(IterationCount));
+	ModelFullLoadSamples.reserve(static_cast<size_t>(IterationCount));
+
+	for (int32 IterationIndex = 0; IterationIndex < IterationCount; ++IterationIndex)
+	{
+		const auto ObjLoadStartTime = std::chrono::steady_clock::now();
+		UStaticMesh* ObjMesh = FObjManager::LoadObjStaticMeshAssetUncached(ModelState.SourceFilePath, LoadOptions);
+		const auto ObjLoadEndTime = std::chrono::steady_clock::now();
+		if (ObjMesh == nullptr)
+		{
+			LoadBenchmarkState.StatusMessage = "OBJ full load benchmark failed.";
+			return false;
+		}
+
+		ObjFullLoadSamples.push_back(GetElapsedMilliseconds(ObjLoadStartTime, ObjLoadEndTime));
+		delete ObjMesh;
+
+		const auto ModelLoadStartTime = std::chrono::steady_clock::now();
+		UStaticMesh* ModelMesh = FObjManager::LoadModelStaticMeshAssetUncached(BenchmarkModelPath);
+		const auto ModelLoadEndTime = std::chrono::steady_clock::now();
+		if (ModelMesh == nullptr)
+		{
+			LoadBenchmarkState.StatusMessage = "Binary full load benchmark failed.";
+			return false;
+		}
+
+		ModelFullLoadSamples.push_back(GetElapsedMilliseconds(ModelLoadStartTime, ModelLoadEndTime));
+		delete ModelMesh;
+	}
+
+	LoadBenchmarkState.ObjFullLoadStats = BuildBenchmarkStats(ObjFullLoadSamples);
+	LoadBenchmarkState.ModelFullLoadStats = BuildBenchmarkStats(ModelFullLoadSamples);
+	LoadBenchmarkState.bHasResults = true;
+	LoadBenchmarkState.bLastRunSucceeded = true;
+	LoadBenchmarkState.StatusMessage = "Benchmark finished.";
+	return true;
 }
 
 void FObjViewerEngine::ClearLoadedModel()
@@ -375,6 +621,7 @@ void FObjViewerEngine::ClearLoadedModel()
 	}
 
 	ModelState = {};
+	RefreshLoadBenchmarkSourceMetadata();
 }
 
 void FObjViewerEngine::FrameLoadedModel()
@@ -425,6 +672,31 @@ void FObjViewerEngine::ResetViewerCamera()
 FObjViewerShell& FObjViewerEngine::GetShell() const
 {
 	return *ViewerShell;
+}
+
+void FObjViewerEngine::RefreshLoadBenchmarkSourceMetadata()
+{
+	LoadBenchmarkState.bHasResults = false;
+	LoadBenchmarkState.bLastRunSucceeded = false;
+	LoadBenchmarkState.ObjReadStats = {};
+	LoadBenchmarkState.ModelReadStats = {};
+	LoadBenchmarkState.ObjFullLoadStats = {};
+	LoadBenchmarkState.ModelFullLoadStats = {};
+	LoadBenchmarkState.StatusMessage.clear();
+
+	if (!HasLoadedModel())
+	{
+		LoadBenchmarkState.SourceObjPath.clear();
+		LoadBenchmarkState.BenchmarkModelPath.clear();
+		LoadBenchmarkState.SourceObjFileSizeBytes = 0;
+		LoadBenchmarkState.BenchmarkModelFileSizeBytes = 0;
+		return;
+	}
+
+	LoadBenchmarkState.SourceObjPath = ModelState.SourceFilePath;
+	LoadBenchmarkState.BenchmarkModelPath = BuildBenchmarkModelPath(ModelState);
+	LoadBenchmarkState.SourceObjFileSizeBytes = TryGetFileSize(ModelState.SourceFilePath);
+	LoadBenchmarkState.BenchmarkModelFileSizeBytes = TryGetFileSize(LoadBenchmarkState.BenchmarkModelPath);
 }
 
 void FObjViewerEngine::BindHost(FWindowsWindow* InMainWindow)
@@ -804,4 +1076,6 @@ void FObjViewerEngine::UpdateLoadedModelState(
 		ModelState.BoundsRadius = Mesh->LocalBounds.Radius;
 		ModelState.BoundsExtent = Mesh->LocalBounds.BoxExtent;
 	}
+
+	RefreshLoadBenchmarkSourceMetadata();
 }

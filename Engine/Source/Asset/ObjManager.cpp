@@ -768,12 +768,30 @@ UStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 
 UStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName, const FObjLoadOptions& LoadOptions)
 {
+	return LoadObjStaticMeshAssetInternal(PathFileName, LoadOptions, true);
+}
+
+UStaticMesh* FObjManager::LoadObjStaticMeshAssetUncached(const FString& PathFileName)
+{
+	return LoadObjStaticMeshAssetUncached(PathFileName, FObjLoadOptions{});
+}
+
+UStaticMesh* FObjManager::LoadObjStaticMeshAssetUncached(const FString& PathFileName, const FObjLoadOptions& LoadOptions)
+{
+	return LoadObjStaticMeshAssetInternal(PathFileName, LoadOptions, false);
+}
+
+UStaticMesh* FObjManager::LoadObjStaticMeshAssetInternal(const FString& PathFileName, const FObjLoadOptions& LoadOptions, bool bUseCache)
+{
 	const FString CacheKey = BuildObjCacheKey(PathFileName, LoadOptions);
 
-	auto It = ObjStaticMeshMap.find(CacheKey);
-	if (It != ObjStaticMeshMap.end())
+	if (bUseCache)
 	{
-		return It->second;
+		auto It = ObjStaticMeshMap.find(CacheKey);
+		if (It != ObjStaticMeshMap.end())
+		{
+			return It->second;
+		}
 	}
 
 	auto RawData = std::make_unique<FStaticMesh>();
@@ -784,18 +802,34 @@ UStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName, co
 	}
 
 	UStaticMesh* NewAsset = FinalizeStaticMeshAsset(PathFileName, std::move(RawData), FoundMaterials);
-	ObjStaticMeshMap[CacheKey] = NewAsset;
+	if (bUseCache)
+	{
+		ObjStaticMeshMap[CacheKey] = NewAsset;
+	}
 	return NewAsset;
 }
 
 UStaticMesh* FObjManager::LoadModelStaticMeshAsset(const FString& PathFileName)
 {
+	return LoadModelStaticMeshAssetInternal(PathFileName, true);
+}
+
+UStaticMesh* FObjManager::LoadModelStaticMeshAssetUncached(const FString& PathFileName)
+{
+	return LoadModelStaticMeshAssetInternal(PathFileName, false);
+}
+
+UStaticMesh* FObjManager::LoadModelStaticMeshAssetInternal(const FString& PathFileName, bool bUseCache)
+{
 	FString StandardizedPath = GetStandardizedMeshPath(PathFileName);
 
-	auto It = ObjStaticMeshMap.find(StandardizedPath);
-	if (It != ObjStaticMeshMap.end())
+	if (bUseCache)
 	{
-		return It->second;
+		auto It = ObjStaticMeshMap.find(StandardizedPath);
+		if (It != ObjStaticMeshMap.end())
+		{
+			return It->second;
+		}
 	}
 
 	const FString AbsolutePath = FPaths::ToAbsolutePath(PathFileName);
@@ -903,7 +937,10 @@ UStaticMesh* FObjManager::LoadModelStaticMeshAsset(const FString& PathFileName)
 	if (Version == GModelVersionLegacy)
 	{
 		UStaticMesh* NewAsset = FinalizeStaticMeshAsset(PathFileName, std::move(RawData), MaterialSlotNames);
-		ObjStaticMeshMap[StandardizedPath] = NewAsset;
+		if (bUseCache)
+		{
+			ObjStaticMeshMap[StandardizedPath] = NewAsset;
+		}
 		return NewAsset;
 	}
 
@@ -926,7 +963,10 @@ UStaticMesh* FObjManager::LoadModelStaticMeshAsset(const FString& PathFileName)
 	}
 
 	UStaticMesh* NewAsset = FinalizeStaticMeshAsset(PathFileName, std::move(RawData), MaterialInfos);
-	ObjStaticMeshMap[StandardizedPath] = NewAsset;
+	if (bUseCache)
+	{
+		ObjStaticMeshMap[StandardizedPath] = NewAsset;
+	}
 	return NewAsset;
 }
 
@@ -1230,10 +1270,10 @@ void FObjManager::PreloadAllObjFiles(const FString& DirectoryPath)
 	const FString AbsolutePath = FPaths::ToAbsolutePath(DirectoryPath);
 	const std::filesystem::path DirPath = std::filesystem::path(FPaths::ToWide(AbsolutePath)).lexically_normal();
 
-	// 폴더가 존재하는지 확인
+	// ????臾덉쾸? ?브퀡????濡ル츎嶺뚯솘? ?筌먦끉逾?
 	if (!std::filesystem::exists(DirPath) || !std::filesystem::is_directory(DirPath))
 	{
-		UE_LOG("[FObjManager] Preload 실패: 폴더를 찾을 수 없습니다. (%s)", AbsolutePath.c_str());
+		UE_LOG("[FObjManager] Preload ???덉넮: ????臾딅ご?嶺뚢돦堉??????怨룸????덈펲. (%s)", AbsolutePath.c_str());
 		return;
 	}
 
@@ -1253,10 +1293,10 @@ void FObjManager::PreloadAllModelFiles(const FString& DirectoryPath)
 	const FString AbsolutePath = FPaths::ToAbsolutePath(DirectoryPath);
 	const std::filesystem::path DirPath = std::filesystem::path(FPaths::ToWide(AbsolutePath)).lexically_normal();
 
-	// 폴더가 존재하는지 확인
+	// ????臾덉쾸? ?브퀡????濡ル츎嶺뚯솘? ?筌먦끉逾?
 	if (!std::filesystem::exists(DirPath) || !std::filesystem::is_directory(DirPath))
 	{
-		UE_LOG("[FObjManager] Preload 실패: 폴더를 찾을 수 없습니다. (%s)", AbsolutePath.c_str());
+		UE_LOG("[FObjManager] Preload ???덉넮: ????臾딅ご?嶺뚢돦堉??????怨룸????덈펲. (%s)", AbsolutePath.c_str());
 		return;
 	}
 
@@ -1279,7 +1319,7 @@ void FObjManager::PreloadAllMtlFiles(const FString& DirectoryPath)
 
 	if (!std::filesystem::exists(DirPath) || !std::filesystem::is_directory(DirPath))
 	{
-		UE_LOG("[FObjManager] MTL Preload 실패: 폴더를 찾을 수 없습니다. (%s)", AbsolutePath.c_str());
+		UE_LOG("[FObjManager] MTL Preload ???덉넮: ????臾딅ご?嶺뚢돦堉??????怨룸????덈펲. (%s)", AbsolutePath.c_str());
 		return;
 	}
 

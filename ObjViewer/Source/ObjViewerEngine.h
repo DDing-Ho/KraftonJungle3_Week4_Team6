@@ -80,6 +80,34 @@ struct FObjViewerNormalSettings
 	float LengthScale = 0.05f;
 };
 
+struct FObjViewerBenchmarkStats
+{
+	int32 SampleCount = 0;
+	double LastMilliseconds = 0.0;
+	double MinMilliseconds = 0.0;
+	double MaxMilliseconds = 0.0;
+	double AverageMilliseconds = 0.0;
+};
+
+struct FObjViewerLoadBenchmarkState
+{
+	int32 IterationCount = 5;
+	bool bRebuildBenchmarkModelBeforeRun = true;
+	bool bHasResults = false;
+	bool bLastRunSucceeded = false;
+
+	FString SourceObjPath;
+	FString BenchmarkModelPath;
+	uint64 SourceObjFileSizeBytes = 0;
+	uint64 BenchmarkModelFileSizeBytes = 0;
+	FString StatusMessage;
+
+	FObjViewerBenchmarkStats ObjReadStats;
+	FObjViewerBenchmarkStats ModelReadStats;
+	FObjViewerBenchmarkStats ObjFullLoadStats;
+	FObjViewerBenchmarkStats ModelFullLoadStats;
+};
+
 class FObjViewerEngine : public FEngine
 {
 public:
@@ -97,6 +125,7 @@ public:
 	void ClearLoadedModel();
 	void FrameLoadedModel();
 	void ResetViewerCamera();
+	bool RunBenchmark();
 
 	bool HasLoadedModel() const { return ModelState.bLoaded && ModelState.Mesh != nullptr; }
 	const FObjViewerModelState& GetModelState() const { return ModelState; }
@@ -104,6 +133,8 @@ public:
 	FObjViewerGridSettings& GetMutableGridSettings() { return GridSettings; }
 	const FObjViewerNormalSettings& GetNormalSettings() const { return NormalSettings; }
 	FObjViewerNormalSettings& GetMutableNormalSettings() { return NormalSettings; }
+	const FObjViewerLoadBenchmarkState& GetBenchmarkState() const { return LoadBenchmarkState; }
+	FObjViewerLoadBenchmarkState& GetMutableBenchmarkState() { return LoadBenchmarkState; }
 	bool IsWireframeEnabled() const { return bWireframeEnabled; }
 	void SetWireframeEnabled(bool bEnabled) { bWireframeEnabled = bEnabled; }
 	FObjViewerShell& GetShell() const;
@@ -122,6 +153,8 @@ private:
 	void ApplyWireframeOverride(FRenderCommandQueue& Queue) const;
 	void AppendNormalVisualizationDebugDraw();
 	void AppendGridRenderCommand(FRenderCommandQueue& Queue) const;
+	bool ExportLoadedModelAsBenchmarkModel(const FString& FilePath) const;
+	void RefreshLoadBenchmarkSourceMetadata();
 	void UpdateLoadedModelState(
 		const FString& FilePath,
 		const FObjImportSummary& ImportOptions,
@@ -133,6 +166,7 @@ private:
 	FObjViewerModelState ModelState;
 	FObjViewerGridSettings GridSettings;
 	FObjViewerNormalSettings NormalSettings;
+	FObjViewerLoadBenchmarkState LoadBenchmarkState;
 	std::unique_ptr<FDynamicMesh> GridMesh;
 	std::shared_ptr<FMaterial> GridMaterial;
 	bool bWireframeEnabled = false;

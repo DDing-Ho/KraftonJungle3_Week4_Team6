@@ -36,7 +36,10 @@ public:
 	static UStaticMesh* LoadStaticMeshAsset(const FString& PathFileName);
 	static UStaticMesh* LoadObjStaticMeshAsset(const FString& PathFileName);
 	static UStaticMesh* LoadObjStaticMeshAsset(const FString& PathFileName, const FObjLoadOptions& LoadOptions);
+	static UStaticMesh* LoadObjStaticMeshAssetUncached(const FString& PathFileName);
+	static UStaticMesh* LoadObjStaticMeshAssetUncached(const FString& PathFileName, const FObjLoadOptions& LoadOptions);
 	static UStaticMesh* LoadModelStaticMeshAsset(const FString& PathFileName);
+	static UStaticMesh* LoadModelStaticMeshAssetUncached(const FString& PathFileName);
 	static bool SaveModelStaticMeshAsset(const FString& PathFileName, const FStaticMesh& StaticMesh, const TArray<FModelMaterialInfo>& MaterialInfos);
 	static bool BuildModelMaterialInfosFromObj(const FString& ObjFilePath, const FString& ModelFilePath, const TArray<FString>& MaterialSlotNames, TArray<FModelMaterialInfo>& OutMaterialInfos);
 	static bool ParseMtlFile(const FString& MtlFIlePath);
@@ -47,5 +50,7 @@ public:
 	static void ClearCache();
 
 private:
+	static UStaticMesh* LoadObjStaticMeshAssetInternal(const FString& PathFileName, const FObjLoadOptions& LoadOptions, bool bUseCache);
+	static UStaticMesh* LoadModelStaticMeshAssetInternal(const FString& PathFileName, bool bUseCache);
 	static bool ParseObjFile(const FString& FilePath, FStaticMesh* OutMesh, TArray<FString>& OutMaterialNames, const FObjLoadOptions& LoadOptions);
 };
