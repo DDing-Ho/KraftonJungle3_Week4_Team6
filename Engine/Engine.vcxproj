@@ -41,7 +41,7 @@
     <ClInclude Include="Source\Component\SkyComponent.h" />
     <ClInclude Include="Source\Component\StaticMeshComponent.h" />
     <ClInclude Include="Source\Component\SubUVComponent.h" />
-    <ClInclude Include="Source\Component\TextComponent.h" />
+    <ClInclude Include="Source\Component\TextRenderComponent.h" />
     <ClInclude Include="Source\Component\UUIDBillboardComponent.h" />
     <ClInclude Include="Source\Core\ConsoleVariableManager.h" />
     <ClInclude Include="Source\Core\Engine.h" />
@@ -234,7 +234,7 @@
     <ClCompile Include="Source\Component\SkyComponent.cpp" />
     <ClCompile Include="Source\Component\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Component\SubUVComponent.cpp" />
-    <ClCompile Include="Source\Component\TextComponent.cpp" />
+    <ClCompile Include="Source\Component\TextRenderComponent.cpp" />
     <ClCompile Include="Source\Component\UUIDBillboardComponent.cpp" />
     <ClCompile Include="Source\Core\ConsoleVariableManager.cpp" />
     <ClCompile Include="Source\Core\Engine.cpp" />

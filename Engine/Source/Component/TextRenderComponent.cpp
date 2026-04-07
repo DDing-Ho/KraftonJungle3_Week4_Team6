@@ -1,13 +1,13 @@
-#include "TextComponent.h"
+#include "TextRenderComponent.h"
 #include "Object/Class.h"
 #include <algorithm>
 
 #include "Serializer/Archive.h"
 
 
-IMPLEMENT_RTTI(UTextComponent, UPrimitiveComponent)
+IMPLEMENT_RTTI(UTextRenderComponent, UPrimitiveComponent)
 
-void UTextComponent::PostConstruct()
+void UTextRenderComponent::PostConstruct()
 {
 	// 폰트 렌더링용 메시 데이터 객체 생성
 	bDrawDebugBounds = false;
@@ -18,7 +18,7 @@ void UTextComponent::PostConstruct()
 	if (TextMesh) TextMesh->bIsDirty = true;
 }
 
-void UTextComponent::SetText(const FString& InText)
+void UTextRenderComponent::SetText(const FString& InText)
 {
 	if (Text != InText)
 	{
@@ -28,12 +28,12 @@ void UTextComponent::SetText(const FString& InText)
 	}
 }
 
-FRenderMesh* UTextComponent::GetRenderMesh() const
+FRenderMesh* UTextRenderComponent::GetRenderMesh() const
 {
 	return TextMesh.get();
 }
 
-void UTextComponent::Serialize(FArchive& Ar)
+void UTextRenderComponent::Serialize(FArchive& Ar)
 {
 	UPrimitiveComponent::Serialize(Ar);
 
@@ -55,10 +55,10 @@ void UTextComponent::Serialize(FArchive& Ar)
 	}
 }
 
-void UTextComponent::CopyPropertiesFrom(const UObject* Source)
+void UTextRenderComponent::CopyPropertiesFrom(const UObject* Source)
 {
 	UPrimitiveComponent::CopyPropertiesFrom(Source);
-	const UTextComponent* SourceComp = static_cast<const UTextComponent*>(Source);
+	const UTextRenderComponent* SourceComp = static_cast<const UTextRenderComponent*>(Source);
 
 	this->Text = SourceComp->Text;
 	this->TextColor = SourceComp->TextColor;
@@ -70,7 +70,7 @@ void UTextComponent::CopyPropertiesFrom(const UObject* Source)
 	this->bTextMeshDirty = SourceComp->bTextMeshDirty;
 }
 
-FBoxSphereBounds UTextComponent::GetWorldBounds() const
+FBoxSphereBounds UTextRenderComponent::GetWorldBounds() const
 {
 	const FVector Center = GetRenderWorldPosition();
 	const FString DisplayText = GetDisplayText();

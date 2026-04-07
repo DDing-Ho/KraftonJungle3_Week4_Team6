@@ -3,7 +3,7 @@
 #include "Component/UUIDBillboardComponent.h"
 #include "Object/Class.h"
 #include "Renderer/Material.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include "Component/SceneComponent.h"
 #include "Debug/EngineLog.h"
 #include "Serializer/Archive.h"

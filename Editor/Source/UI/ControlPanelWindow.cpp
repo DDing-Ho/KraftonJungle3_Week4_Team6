@@ -5,7 +5,7 @@
 #include "Renderer/Renderer.h"
 #include "Scene/Level.h"
 #include "Actor/Actor.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include "Component/SkyComponent.h"
 #include "Object/ObjectFactory.h"
 #include "Camera/Camera.h"
@@ -237,7 +237,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 				if (NewActor)
 				{
 					ATextActor* TextActor = static_cast<ATextActor*>(NewActor);
-					if (UTextComponent* TextComponent = TextActor->GetComponentByClass<UTextComponent>())
+					if (UTextRenderComponent* TextComponent = TextActor->GetComponentByClass<UTextRenderComponent>())
 					{
 						if (SpawnTextBuffer[0] != '\0') TextComponent->SetText(SpawnTextBuffer);
 						else TextComponent->SetText("Text");

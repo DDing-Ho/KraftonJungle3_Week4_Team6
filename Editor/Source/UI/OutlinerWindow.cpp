@@ -7,7 +7,7 @@
 #include "Scene/Level.h"
 #include "Actor/Actor.h"
 #include "Component/SubUVComponent.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include "Component/UUIDBillboardComponent.h"
 
 void FOutlinerWindow::Render(FEditorEngine* Engine)

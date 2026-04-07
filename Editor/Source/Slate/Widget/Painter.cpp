@@ -1,7 +1,7 @@
 #include "Painter.h"
 
 #include "Renderer/Renderer.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include <limits>
 #include <algorithm>
 

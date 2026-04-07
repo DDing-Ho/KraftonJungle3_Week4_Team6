@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source">
@@ -141,7 +141,7 @@
     <ClCompile Include="Source\Component\SubUVComponent.cpp">
       <Filter>Source\Component</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Component\TextComponent.cpp">
+    <ClCompile Include="Source\Component\TextRenderComponent.cpp">
       <Filter>Source\Component</Filter>
     </ClCompile>
     <ClCompile Include="Source\Component\UUIDBillboardComponent.cpp">
@@ -370,9 +370,6 @@
       <Filter>Source\Component</Filter>
     </ClInclude>
     <ClInclude Include="Source\Component\SubUVComponent.h">
-      <Filter>Source\Component</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Component\TextComponent.h">
       <Filter>Source\Component</Filter>
     </ClInclude>
     <ClInclude Include="Source\Component\UUIDBillboardComponent.h">
@@ -889,6 +886,7 @@
       <Filter>Source\Object</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\GameViewportClient.h" />
+    <ClInclude Include="Source\Component\TextRenderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

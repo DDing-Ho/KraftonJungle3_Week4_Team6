@@ -3,13 +3,13 @@
 #include "Core/Paths.h"
 #include "Object/ObjectFactory.h"
 #include "Object/Class.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 
 IMPLEMENT_RTTI(ATextActor, AActor)
 
 void ATextActor::PostSpawnInitialize()
 {
-	TextComponent = FObjectFactory::ConstructObject<UTextComponent>(this, "TextComponent");
+	TextComponent = FObjectFactory::ConstructObject<UTextRenderComponent>(this, "TextComponent");
 	AddOwnedComponent(TextComponent);
 
 	AActor::PostSpawnInitialize();

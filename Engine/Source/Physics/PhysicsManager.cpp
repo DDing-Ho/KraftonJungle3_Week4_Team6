@@ -6,7 +6,7 @@
 #include "Component/PrimitiveComponent.h"
 #include "Component/SubUVComponent.h"
 #include "Component/UUIDBillboardComponent.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 
 bool FPhysicsManager::Linetrace(const ULevel* Level, const FVector& Start, const FVector& End, FHitResult& OutHit)
 {

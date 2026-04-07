@@ -3,7 +3,7 @@
 #include "Actor/Actor.h"
 #include "Component/StaticMeshComponent.h"
 #include "Component/SubUVComponent.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include "Component/UUIDBillboardComponent.h"
 #include "Object/ObjectIterator.h"
 #include "Renderer/MeshData.h"
@@ -150,9 +150,9 @@ void FPropertyWindow::Render(FEditorEngine* Engine)
 						if (ImGui::Checkbox("SubUV Billboard", &bBillboard))
 							SubUVComp->SetBillboard(bBillboard);
 					}
-					else if (Component->IsA(UTextComponent::StaticClass()) && !Component->IsA(UUUIDBillboardComponent::StaticClass()))
+					else if (Component->IsA(UTextRenderComponent::StaticClass()) && !Component->IsA(UUUIDBillboardComponent::StaticClass()))
 					{
-						UTextComponent* TextComp = static_cast<UTextComponent*>(Component);
+						UTextRenderComponent* TextComp = static_cast<UTextRenderComponent*>(Component);
 						bool bBillboard = TextComp->IsBillboard();
 						if (ImGui::Checkbox("Text Billboard", &bBillboard))
 							TextComp->SetBillboard(bBillboard);

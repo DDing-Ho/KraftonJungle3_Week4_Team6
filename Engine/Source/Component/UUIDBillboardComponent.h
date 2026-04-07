@@ -1,12 +1,12 @@
 #pragma once
 
-#include "TextComponent.h"
+#include "TextRenderComponent.h"
 
 
-class ENGINE_API UUUIDBillboardComponent : public UTextComponent
+class ENGINE_API UUUIDBillboardComponent : public UTextRenderComponent
 {
 public:
-	DECLARE_RTTI(UUUIDBillboardComponent, UTextComponent)
+	DECLARE_RTTI(UUUIDBillboardComponent, UTextRenderComponent)
 
 	void PostConstruct() override;
 

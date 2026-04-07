@@ -5,7 +5,7 @@
 #include "Component/StaticMeshComponent.h"
 #include "Component/SubUVComponent.h"
 #include "Core/Engine.h"
-#include "Component/TextComponent.h"
+#include "Component/TextRenderComponent.h"
 #include "Debug/EngineLog.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/TextMeshBuilder.h"
@@ -31,9 +31,9 @@ void FLevelRenderCollector::CollectRenderCommands(const TArray<AActor*>& Actors,
 		if (!Comp) continue;
 
 		// ─── 1. 텍스트 컴포넌트 ───
-		if (Comp->IsA(UTextComponent::StaticClass()))
+		if (Comp->IsA(UTextRenderComponent::StaticClass()))
 		{
-			UTextComponent* TextComp = static_cast<UTextComponent*>(Comp);
+			UTextRenderComponent* TextComp = static_cast<UTextRenderComponent*>(Comp);
 			FRenderMesh* TextMesh = TextComp->GetRenderMesh();
 
 			if (TextMesh)
@@ -188,7 +188,7 @@ void FLevelRenderCollector::FrustrumCull(const TArray<AActor*>& Actors, const FF
 
 			const bool bIsUUID = PrimitiveComponent->IsA(UUUIDBillboardComponent::StaticClass());
 			const bool bIsSubUV = PrimitiveComponent->IsA(USubUVComponent::StaticClass());
-			const bool bIsText = PrimitiveComponent->IsA(UTextComponent::StaticClass());
+			const bool bIsText = PrimitiveComponent->IsA(UTextRenderComponent::StaticClass());
 			// ─── ShowFlags에 따른 필터링 ───
 			if (bIsUUID)
 			{
