@@ -27,7 +27,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderStateManager.h"
 #include "Renderer/ShaderMap.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "World/World.h"
 
 namespace
@@ -202,9 +202,9 @@ FObjViewerEngine::FObjViewerEngine()
 
 FObjViewerEngine::~FObjViewerEngine() = default;
 
-UScene* FObjViewerEngine::GetActiveScene() const
+ULevel* FObjViewerEngine::GetActiveLevel() const
 {
-	return (ViewerWorldContext && ViewerWorldContext->World) ? ViewerWorldContext->World->GetScene() : nullptr;
+	return (ViewerWorldContext && ViewerWorldContext->World) ? ViewerWorldContext->World->GetLevel() : nullptr;
 }
 
 UWorld* FObjViewerEngine::GetActiveWorld() const
@@ -232,8 +232,8 @@ bool FObjViewerEngine::LoadModelFromFile(const FString& FilePath, const FObjImpo
 	}
 
 	UWorld* ViewerWorld = GetActiveWorld();
-	UScene* ViewerScene = GetActiveScene();
-	if (!ViewerWorld || !ViewerScene)
+	ULevel* ViewerLevel = GetActiveLevel();
+	if (!ViewerWorld || !ViewerLevel)
 	{
 		return false;
 	}
@@ -350,10 +350,10 @@ bool FObjViewerEngine::ReloadLoadedModel()
 void FObjViewerEngine::ClearLoadedModel()
 {
 	UWorld* ViewerWorld = GetActiveWorld();
-	UScene* ViewerScene = GetActiveScene();
-	if (ViewerScene)
+	ULevel* ViewerLevel = GetActiveLevel();
+	if (ViewerLevel)
 	{
-		const TArray<AActor*> ExistingActors = ViewerScene->GetActors();
+		const TArray<AActor*> ExistingActors = ViewerLevel->GetActors();
 		for (AActor* Actor : ExistingActors)
 		{
 			if (Actor == nullptr || Actor->IsPendingDestroy())
@@ -367,11 +367,11 @@ void FObjViewerEngine::ClearLoadedModel()
 			}
 			else
 			{
-				ViewerScene->DestroyActor(Actor);
+				ViewerLevel->DestroyActor(Actor);
 			}
 		}
 
-		ViewerScene->CleanupDestroyedActors();
+		ViewerLevel->CleanupDestroyedActors();
 	}
 
 	ModelState = {};
@@ -444,7 +444,7 @@ bool FObjViewerEngine::InitializeWorlds(int32 Width, int32 Height)
 		? (static_cast<float>(Width) / static_cast<float>(Height))
 		: 1.0f;
 
-	ViewerWorldContext = CreateWorldContext("ObjViewerScene", EWorldType::Preview, AspectRatio, false);
+	ViewerWorldContext = CreateWorldContext("ObjViewerLevel", EWorldType::Preview, AspectRatio, false);
 	if (!ViewerWorldContext || !ViewerWorldContext->World)
 	{
 		return false;
@@ -489,15 +489,15 @@ void FObjViewerEngine::RenderFrame()
 		const FObjViewerViewportSurface& Surface = ViewerShell->GetViewportSurface();
 		if (Surface.IsValid())
 		{
-			D3D11_VIEWPORT SceneViewport = {};
-			SceneViewport.TopLeftX = 0.0f;
-			SceneViewport.TopLeftY = 0.0f;
-			SceneViewport.Width = static_cast<float>(Surface.GetWidth());
-			SceneViewport.Height = static_cast<float>(Surface.GetHeight());
-			SceneViewport.MinDepth = 0.0f;
-			SceneViewport.MaxDepth = 1.0f;
+			D3D11_VIEWPORT LevelViewport = {};
+			LevelViewport.TopLeftX = 0.0f;
+			LevelViewport.TopLeftY = 0.0f;
+			LevelViewport.Width = static_cast<float>(Surface.GetWidth());
+			LevelViewport.Height = static_cast<float>(Surface.GetHeight());
+			LevelViewport.MinDepth = 0.0f;
+			LevelViewport.MaxDepth = 1.0f;
 
-			Renderer->SetSceneRenderTarget(Surface.GetRTV(), Surface.GetDSV(), SceneViewport);
+			Renderer->SetLevelRenderTarget(Surface.GetRTV(), Surface.GetDSV(), LevelViewport);
 
 			if (UWorld* ActiveWorld = GetActiveWorld())
 			{
@@ -507,18 +507,18 @@ void FObjViewerEngine::RenderFrame()
 		}
 		else
 		{
-			Renderer->ClearSceneRenderTarget();
+			Renderer->ClearLevelRenderTarget();
 		}
 	}
 
 	Renderer->BeginFrame();
 
 	UWorld* ActiveWorld = GetActiveWorld();
-	UScene* Scene = GetViewportClient() ? GetViewportClient()->ResolveScene(this) : GetActiveScene();
+	ULevel* Level = GetViewportClient() ? GetViewportClient()->ResolveLevel(this) : GetActiveLevel();
 	FShowFlags ViewerShowFlags;
 	ViewerShowFlags.SetFlag(EEngineShowFlags::SF_UUID, false);
 	ViewerShowFlags.SetFlag(EEngineShowFlags::SF_DebugDraw, NormalSettings.bVisible);
-	if (Scene && ActiveWorld)
+	if (Level && ActiveWorld)
 	{
 		UCameraComponent* ActiveCamera = ActiveWorld->GetActiveCameraComponent();
 		if (ActiveCamera)
@@ -535,7 +535,7 @@ void FObjViewerEngine::RenderFrame()
 			if (IViewportClient* ViewportClient = GetViewportClient())
 			{
 				const FVector CameraPosition = Queue.ViewMatrix.GetInverse().GetTranslation();
-				ViewportClient->BuildRenderCommands(this, Scene, Frustum, ViewerShowFlags, CameraPosition, Queue);
+				ViewportClient->BuildRenderCommands(this, Level, Frustum, ViewerShowFlags, CameraPosition, Queue);
 			}
 			ApplyWireframeOverride(Queue);
 			AppendGridRenderCommand(Queue);
@@ -553,7 +553,7 @@ void FObjViewerEngine::RenderFrame()
 	}
 
 	Renderer->EndFrame();
-	Renderer->ClearSceneRenderTarget();
+	Renderer->ClearLevelRenderTarget();
 }
 
 void FObjViewerEngine::InitializeViewerCamera() const

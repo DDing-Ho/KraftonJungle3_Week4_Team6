@@ -13,6 +13,25 @@ void USubUVComponent::PostConstruct()
 
 FRenderMesh* USubUVComponent::GetRenderMesh() const { return SubUVMesh.get(); }
 
+void USubUVComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UPrimitiveComponent::CopyPropertiesFrom(Source);
+	const USubUVComponent* SourceComp = static_cast<const USubUVComponent*>(Source);
+
+	this->Size = SourceComp->Size;
+	this->Color = SourceComp->Color;
+	this->Columns = SourceComp->Columns;
+	this->Rows = SourceComp->Rows;
+	this->TotalFrames = SourceComp->TotalFrames;
+	this->FirstFrame = SourceComp->FirstFrame;
+	this->LastFrame = SourceComp->LastFrame;
+	this->FPS = SourceComp->FPS;
+	this->bLoop = SourceComp->bLoop;
+	this->bBillboard = SourceComp->bBillboard;
+
+	this->SubUVMesh = SourceComp->SubUVMesh;
+}
+
 FBoxSphereBounds USubUVComponent::GetWorldBounds() const
 {
 	const FVector Center = GetWorldLocation();

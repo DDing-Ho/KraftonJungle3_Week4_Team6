@@ -39,12 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file Declares a helper class, "SceneCombiner" providing various
- *  utilities to merge scenes.
+/** @file Declares a helper class, "LevelCombiner" providing various
+ *  utilities to merge Levels.
  */
 #pragma once
-#ifndef AI_SCENE_COMBINER_H_INC
-#define AI_SCENE_COMBINER_H_INC
+#ifndef AI_Level_COMBINER_H_INC
+#define AI_Level_COMBINER_H_INC
 
 #ifdef __GNUC__
 #pragma GCC system_header
@@ -59,7 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <set>
 #include <vector>
 
-struct aiScene;
+struct aiLevel;
 struct aiNode;
 struct aiMaterial;
 struct aiTexture;
@@ -76,28 +76,28 @@ struct aiMeshMorphAnim;
 namespace Assimp {
 
 // ---------------------------------------------------------------------------
-/** \brief Helper data structure for SceneCombiner.
+/** \brief Helper data structure for LevelCombiner.
  *
- *  Describes to which node a scene must be attached to.
+ *  Describes to which node a Level must be attached to.
  */
 struct AttachmentInfo {
     AttachmentInfo() = default;
-    AttachmentInfo(aiScene *_scene, aiNode *_attachToNode) : scene(_scene), attachToNode(_attachToNode) {
+    AttachmentInfo(aiLevel *_Level, aiNode *_attachToNode) : Level(_Level), attachToNode(_attachToNode) {
         // empty
     }
     ~AttachmentInfo() = default;
 
-    aiScene *scene{nullptr};
+    aiLevel *Level{nullptr};
     aiNode *attachToNode{nullptr};
 };
 
 // ---------------------------------------------------------------------------
-/// @brief Helper data structure for SceneCombiner.
+/// @brief Helper data structure for LevelCombiner.
 struct NodeAttachmentInfo {
     NodeAttachmentInfo() = default;
     ~NodeAttachmentInfo() = default;
-    NodeAttachmentInfo(aiNode *_scene, aiNode *_attachToNode, size_t idx) :
-            node(_scene), attachToNode(_attachToNode), src_idx(idx) {
+    NodeAttachmentInfo(aiNode *_Level, aiNode *_attachToNode, size_t idx) :
+            node(_Level), attachToNode(_attachToNode), src_idx(idx) {
         // empty
     }
 
@@ -108,118 +108,118 @@ struct NodeAttachmentInfo {
 };
 
 // ---------------------------------------------------------------------------
-/** @def AI_INT_MERGE_SCENE_GEN_UNIQUE_NAMES
- *  Generate unique names for all named scene items
+/** @def AI_INT_MERGE_Level_GEN_UNIQUE_NAMES
+ *  Generate unique names for all named Level items
  */
-#define AI_INT_MERGE_SCENE_GEN_UNIQUE_NAMES 0x1
+#define AI_INT_MERGE_Level_GEN_UNIQUE_NAMES 0x1
 
-/** @def AI_INT_MERGE_SCENE_GEN_UNIQUE_MATNAMES
+/** @def AI_INT_MERGE_Level_GEN_UNIQUE_MATNAMES
  *  Generate unique names for materials, too.
  *  This is not absolutely required to pass the validation.
  */
-#define AI_INT_MERGE_SCENE_GEN_UNIQUE_MATNAMES 0x2
+#define AI_INT_MERGE_Level_GEN_UNIQUE_MATNAMES 0x2
 
-/** @def AI_INT_MERGE_SCENE_DUPLICATES_DEEP_CPY
- * Use deep copies of duplicate scenes
+/** @def AI_INT_MERGE_Level_DUPLICATES_DEEP_CPY
+ * Use deep copies of duplicate Levels
  */
-#define AI_INT_MERGE_SCENE_DUPLICATES_DEEP_CPY 0x4
+#define AI_INT_MERGE_Level_DUPLICATES_DEEP_CPY 0x4
 
-/** @def AI_INT_MERGE_SCENE_RESOLVE_CROSS_ATTACHMENTS
- * If attachment nodes are not found in the given master scene,
- * search the other imported scenes for them in an any order.
+/** @def AI_INT_MERGE_Level_RESOLVE_CROSS_ATTACHMENTS
+ * If attachment nodes are not found in the given master Level,
+ * search the other imported Levels for them in an any order.
  */
-#define AI_INT_MERGE_SCENE_RESOLVE_CROSS_ATTACHMENTS 0x8
+#define AI_INT_MERGE_Level_RESOLVE_CROSS_ATTACHMENTS 0x8
 
-/** @def AI_INT_MERGE_SCENE_GEN_UNIQUE_NAMES_IF_NECESSARY
- * Can be combined with AI_INT_MERGE_SCENE_GEN_UNIQUE_NAMES.
+/** @def AI_INT_MERGE_Level_GEN_UNIQUE_NAMES_IF_NECESSARY
+ * Can be combined with AI_INT_MERGE_Level_GEN_UNIQUE_NAMES.
  * Unique names are generated, but only if this is absolutely
  * required to avoid name conflicts.
  */
-#define AI_INT_MERGE_SCENE_GEN_UNIQUE_NAMES_IF_NECESSARY 0x10
+#define AI_INT_MERGE_Level_GEN_UNIQUE_NAMES_IF_NECESSARY 0x10
 
 using BoneSrcIndex = std::pair<aiBone *, unsigned int> ;
 
 // ---------------------------------------------------------------------------
-/** @brief Helper data structure for SceneCombiner::MergeBones.
+/** @brief Helper data structure for LevelCombiner::MergeBones.
  */
 struct BoneWithHash : public std::pair<uint32_t, aiString *> {
     std::vector<BoneSrcIndex> pSrcBones;
 };
 
 // ---------------------------------------------------------------------------
-/** @brief Utility for SceneCombiner
+/** @brief Utility for LevelCombiner
  */
-struct SceneHelper {
-    SceneHelper() :
-            scene(nullptr),
+struct LevelHelper {
+    LevelHelper() :
+            Level(nullptr),
             idlen(0) {
         id[0] = 0;
     }
 
-    explicit SceneHelper(aiScene *_scene) :
-            scene(_scene), idlen(0) {
+    explicit LevelHelper(aiLevel *_Level) :
+            Level(_Level), idlen(0) {
         id[0] = 0;
     }
 
-    AI_FORCE_INLINE aiScene *operator->() const {
-        return scene;
+    AI_FORCE_INLINE aiLevel *operator->() const {
+        return Level;
     }
 
-    // scene we're working on
-    aiScene *scene;
+    // Level we're working on
+    aiLevel *Level;
 
-    // prefix to be added to all identifiers in the scene ...
+    // prefix to be added to all identifiers in the Level ...
     char id[32];
 
     // and its strlen()
     unsigned int idlen;
 
-    // hash table to quickly check whether a name is contained in the scene
+    // hash table to quickly check whether a name is contained in the Level
     std::set<unsigned int> hashes;
 };
 
 // ---------------------------------------------------------------------------
 /** \brief Static helper class providing various utilities to merge two
- *    scenes. It is intended as internal utility and NOT for use by
+ *    Levels. It is intended as internal utility and NOT for use by
  *    applications.
  *
  * The class is currently being used by various postprocessing steps
  * and loaders (ie. LWS).
  */
-class ASSIMP_API SceneCombiner {
+class ASSIMP_API LevelCombiner {
 public:
     // class cannot be instanced
-    SceneCombiner() = delete;
-    ~SceneCombiner() = delete;
+    LevelCombiner() = delete;
+    ~LevelCombiner() = delete;
 
     // -------------------------------------------------------------------
-    /** Merges two or more scenes.
+    /** Merges two or more Levels.
      *
-     *  @param dest  Receives a pointer to the destination scene. If the
+     *  @param dest  Receives a pointer to the destination Level. If the
      *    pointer doesn't point to nullptr when the function is called, the
-     *    existing scene is cleared and refilled.
-     *  @param src Non-empty list of scenes to be merged. The function
-     *    deletes the input scenes afterwards. There may be duplicate scenes.
-     *  @param flags Combination of the AI_INT_MERGE_SCENE flags defined above
+     *    existing Level is cleared and refilled.
+     *  @param src Non-empty list of Levels to be merged. The function
+     *    deletes the input Levels afterwards. There may be duplicate Levels.
+     *  @param flags Combination of the AI_INT_MERGE_Level flags defined above
      */
-    static void MergeScenes(aiScene **dest, std::vector<aiScene *> &src,
+    static void MergeLevels(aiLevel **dest, std::vector<aiLevel *> &src,
             unsigned int flags = 0);
 
     // -------------------------------------------------------------------
-    /** Merges two or more scenes and attaches all scenes to a specific
-     *  position in the node graph of the master scene.
+    /** Merges two or more Levels and attaches all Levels to a specific
+     *  position in the node graph of the master Level.
      *
-     *  @param dest Receives a pointer to the destination scene. If the
+     *  @param dest Receives a pointer to the destination Level. If the
      *    pointer doesn't point to nullptr when the function is called, the
-     *    existing scene is cleared and refilled.
-     *  @param master Master scene. It will be deleted afterwards. All
-     *    other scenes will be inserted in its node graph.
-     *  @param src Non-empty list of scenes to be merged along with their
-     *    corresponding attachment points in the master scene. The function
-     *    deletes the input scenes afterwards. There may be duplicate scenes.
-     *  @param flags Combination of the AI_INT_MERGE_SCENE flags defined above
+     *    existing Level is cleared and refilled.
+     *  @param master Master Level. It will be deleted afterwards. All
+     *    other Levels will be inserted in its node graph.
+     *  @param src Non-empty list of Levels to be merged along with their
+     *    corresponding attachment points in the master Level. The function
+     *    deletes the input Levels afterwards. There may be duplicate Levels.
+     *  @param flags Combination of the AI_INT_MERGE_Level flags defined above
      */
-    static void MergeScenes(aiScene **dest, aiScene *master,
+    static void MergeLevels(aiLevel **dest, aiLevel *master,
             std::vector<AttachmentInfo> &src,
             unsigned int flags = 0);
 
@@ -279,7 +279,7 @@ public:
             std::vector<aiMesh *>::const_iterator end);
 
     // -------------------------------------------------------------------
-    /** Add a name prefix to all nodes in a scene.
+    /** Add a name prefix to all nodes in a Level.
      *
      *  @param node   Current node. This function is called recursively.
      *  @param prefix Prefix to be added to all nodes
@@ -298,42 +298,42 @@ public:
 
     // -------------------------------------------------------------------
     /** Attach a list of node graphs to well-defined nodes in a master
-     *  graph. This is a helper for MergeScenes()
+     *  graph. This is a helper for MergeLevels()
      *
-     *  @param master Master scene
-     *  @param srcList List of source scenes along with their attachment
+     *  @param master Master Level
+     *  @param srcList List of source Levels along with their attachment
      *    points. If an attachment point is nullptr (or does not exist in
-     *    the master graph), a scene is attached to the root of the master
+     *    the master graph), a Level is attached to the root of the master
      *    graph (as an additional child node)
-     *  @duplicates List of duplicates. If elem[n] == n the scene is not
-     *    a duplicate. Otherwise, elem[n] links scene n to its first occurrence.
+     *  @duplicates List of duplicates. If elem[n] == n the Level is not
+     *    a duplicate. Otherwise, elem[n] links Level n to its first occurrence.
      */
-    static void AttachToGraph(aiScene *master,
+    static void AttachToGraph(aiLevel *master,
             std::vector<NodeAttachmentInfo> &srcList);
 
     static void AttachToGraph(aiNode *attach,
             std::vector<NodeAttachmentInfo> &srcList);
 
     // -------------------------------------------------------------------
-    /** Get a deep copy of a scene
+    /** Get a deep copy of a Level
      *
-     *  @param dest     Receives a pointer to the destination scene
-     *  @param source   Source scene - remains unmodified.
-     *  @param allocate true for allocation a new scene
+     *  @param dest     Receives a pointer to the destination Level
+     *  @param source   Source Level - remains unmodified.
+     *  @param allocate true for allocation a new Level
      */
-    static void CopyScene(aiScene **dest, const aiScene *source, bool allocate = true);
+    static void CopyLevel(aiLevel **dest, const aiLevel *source, bool allocate = true);
 
     // -------------------------------------------------------------------
-    /** Get a flat copy of a scene
+    /** Get a flat copy of a Level
      *
      *  Only the first hierarchy layer is copied. All pointer members of
-     *  aiScene are shared by source and destination scene.  If the
+     *  aiLevel are shared by source and destination Level.  If the
      *    pointer doesn't point to nullptr when the function is called, the
-     *    existing scene is cleared and refilled.
-     *  @param dest Receives a pointer to the destination scene
-     *  @param src Source scene - remains unmodified.
+     *    existing Level is cleared and refilled.
+     *  @param dest Receives a pointer to the destination Level
+     *  @param src Source Level - remains unmodified.
      */
-    static void CopySceneFlat(aiScene **dest, const aiScene *source);
+    static void CopyLevelFlat(aiLevel **dest, const aiLevel *source);
 
     // -------------------------------------------------------------------
     /** Get a deep copy of a mesh
@@ -364,7 +364,7 @@ private:
     // Same as AddNodePrefixes, but with an additional check
     static void AddNodePrefixesChecked(aiNode *node, const char *prefix,
             unsigned int len,
-            std::vector<SceneHelper> &input,
+            std::vector<LevelHelper> &input,
             unsigned int cur);
 
     // -------------------------------------------------------------------
@@ -374,9 +374,9 @@ private:
     // -------------------------------------------------------------------
     // Search for duplicate names
     static bool FindNameMatch(const aiString &name,
-            std::vector<SceneHelper> &input, unsigned int cur);
+            std::vector<LevelHelper> &input, unsigned int cur);
 };
 
 } // namespace Assimp
 
-#endif // !! AI_SCENE_COMBINER_H_INC
+#endif // !! AI_Level_COMBINER_H_INC

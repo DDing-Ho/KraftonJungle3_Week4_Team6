@@ -25,26 +25,22 @@ class ENGINE_API UStaticMesh : public UObject
 {
 public:
 	DECLARE_RTTI(UStaticMesh, UObject)
-	virtual ~UStaticMesh()
-	{
-		if (StaticMeshAsset)
-		{
-			delete StaticMeshAsset;
-			StaticMeshAsset = nullptr;
-		}
-	}
+	virtual ~UStaticMesh() = default;
 
 	FBoxSphereBounds LocalBounds;
 	const FString& GetAssetPathFileName() const;
 
-	void SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
-	FStaticMesh* GetRenderData() const { return StaticMeshAsset; }
+	void SetStaticMeshAsset(std::shared_ptr<FStaticMesh> InStaticMesh) { StaticMeshAsset = InStaticMesh; }
+	FStaticMesh* GetRenderData() const { return StaticMeshAsset.get(); }
 	int32 GetNumSections() const { return StaticMeshAsset ? StaticMeshAsset->GetNumSection() : 0; }
 
 	const TArray<std::shared_ptr<FMaterial>>& GetDefaultMaterials() const { return DefaultMaterials; }
 	void AddDefaultMaterial(const std::shared_ptr<FMaterial>& InMaterial) { DefaultMaterials.push_back(InMaterial); }
 
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 private:
-	FStaticMesh* StaticMeshAsset = nullptr;
+	std::shared_ptr<FStaticMesh> StaticMeshAsset;
 	TArray<std::shared_ptr<FMaterial>> DefaultMaterials;
 };

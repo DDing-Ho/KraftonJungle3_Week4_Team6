@@ -18,18 +18,22 @@ public:
 	FEditorEngine() = default;
 	~FEditorEngine() override;
 
+	void StartPIE();
+	void EndPIE();
+	bool IsPlayingInEditor() const { return PIEWorldContext != nullptr; }
+
 	void Shutdown() override;
 	void SetSelectedActor(AActor* InActor);
 	AActor* GetSelectedActor() const;
-	void ActivateEditorScene();
-	bool ActivatePreviewScene(const FString& ContextName);
-	UScene* GetEditorScene() const;
-	UScene* GetPreviewScene(const FString& ContextName) const;
+	void ActivateEditorLevel();
+	bool ActivatePreviewLevel(const FString& ContextName);
+	ULevel* GetEditorLevel() const;
+	ULevel* GetPreviewLevel(const FString& ContextName) const;
 	UWorld* GetEditorWorld() const;
 	const TArray<FWorldContext*>& GetPreviewWorldContexts() const;
 	FWorldContext* CreatePreviewWorldContext(const FString& ContextName, int32 Width, int32 Height);
-	UScene* GetScene() const override;
-	UScene* GetActiveScene() const override;
+	ULevel* GetLevel() const override;
+	ULevel* GetActiveLevel() const override;
 	UWorld* GetActiveWorld() const override;
 	const FWorldContext* GetActiveWorldContext() const override;
 	void HandleResize(int32 Width, int32 Height) override;
@@ -84,6 +88,7 @@ private:
 	FEditorSelectionSubsystem SelectionSubsystem;
 	FEditorCameraSubsystem CameraSubsystem;
 	FWorldContext* EditorWorldContext = nullptr;
+	FWorldContext* PIEWorldContext = nullptr;
 	TArray<FWorldContext*> PreviewWorldContexts;
 	FWorldContext* ActiveEditorWorldContext = nullptr;
 

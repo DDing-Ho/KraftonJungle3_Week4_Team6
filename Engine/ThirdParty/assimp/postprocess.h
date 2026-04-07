@@ -209,10 +209,10 @@ enum aiPostProcessSteps
     /** <hr>Removes the node graph and pre-transforms all vertices with
     * the local transformation matrices of their nodes.
     *
-    * If the resulting scene can be reduced to a single mesh, with a single
-    * material, no lights, and no cameras, then the output scene will contain
+    * If the resulting Level can be reduced to a single mesh, with a single
+    * material, no lights, and no cameras, then the output Level will contain
     * only a root node (with no children) that references the single mesh.
-    * Otherwise, the output scene will be reduced to a root node with a single
+    * Otherwise, the output Level will be reduced to a root node with a single
     * level of child nodes, each one referencing one mesh, and each mesh
     * referencing one material.
     *
@@ -220,13 +220,13 @@ enum aiPostProcessSteps
     * simply render all meshes in order - you don't need to pay
     * attention to local transformations and the node hierarchy.
     * Animations are removed during this step.
-    * This step is intended for applications without a scenegraph.
+    * This step is intended for applications without a Levelgraph.
     * The step CAN cause some problems: if e.g. a mesh of the asset
     * contains normals and another, using the same material index, does not,
     * they will be brought together, but the first meshes's part of
     * the normal list is zeroed. However, these artifacts are rare.
     * @note The <tt>#AI_CONFIG_PP_PTV_NORMALIZE</tt> configuration property
-    * can be set to normalize the scene's spatial dimension to the -1...1
+    * can be set to normalize the Level's spatial dimension to the -1...1
     * range.
     */
     aiProcess_PreTransformVertices = 0x100,
@@ -248,7 +248,7 @@ enum aiPostProcessSteps
     aiProcess_LimitBoneWeights = 0x200,
 
     // -------------------------------------------------------------------------
-    /** <hr>Validates the imported scene data structure.
+    /** <hr>Validates the imported Level data structure.
      * This makes sure that all indices are valid, all animations and
      * bones are linked correctly, all material references are correct .. etc.
      *
@@ -266,8 +266,8 @@ enum aiPostProcessSteps
      * <li>Warning: There are some minor issues (e.g. 1000000 animation
      *   keyframes with the same time), but further postprocessing and use
      *   of the data structure is still safe. Warning details are written
-     *   to the log file, <tt>#AI_SCENE_FLAGS_VALIDATION_WARNING</tt> is set
-     *   in #aiScene::mFlags</li>
+     *   to the log file, <tt>#AI_Level_FLAGS_VALIDATION_WARNING</tt> is set
+     *   in #aiLevel::mFlags</li>
      * </ul>
      *
      * This post-processing step is not time-consuming. Its use is not
@@ -380,7 +380,7 @@ enum aiPostProcessSteps
      *   <li>Set the <tt>#AI_CONFIG_PP_SBP_REMOVE</tt> importer property to
      *       @code aiPrimitiveType_POINT | aiPrimitiveType_LINE
      *       @endcode to cause SortByPType to reject point
-     *       and line meshes from the scene.
+     *       and line meshes from the Level.
      *   </li>
      * </ul>
      *
@@ -472,7 +472,7 @@ enum aiPostProcessSteps
 
 
     // -------------------------------------------------------------------------
-    /** <hr>A post-processing step to optimize the scene hierarchy.
+    /** <hr>A post-processing step to optimize the Level hierarchy.
      *
      *  Nodes without animations, bones, lights or cameras assigned are
      *  collapsed and joined.
@@ -492,7 +492,7 @@ enum aiPostProcessSteps
      *  This flag is designed to be used with #aiProcess_OptimizeMeshes for best
      *  results.
      *
-     *  @note 'Crappy' scenes with thousands of extremely small meshes packed
+     *  @note 'Crappy' Levels with thousands of extremely small meshes packed
      *  in deeply nested nodes exist for almost all file formats.
      *  #aiProcess_OptimizeMeshes in combination with #aiProcess_OptimizeGraph
      *  usually fixes them all and makes them renderable.
@@ -551,7 +551,7 @@ enum aiPostProcessSteps
      *
      *  Use <tt>#AI_CONFIG_PP_DB_THRESHOLD</tt> to control this.
      *  Use <tt>#AI_CONFIG_PP_DB_ALL_OR_NONE</tt> if you want bones removed if and
-     *  only if all bones within the scene qualify for removal.
+     *  only if all bones within the Level qualify for removal.
     */
     aiProcess_Debone  = 0x4000000,
 

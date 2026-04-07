@@ -15,7 +15,7 @@
 #include "Renderer/MaterialManager.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "ViewportClient.h"
 #include "World/World.h"
 #include "Object/ObjectFactory.h"
@@ -160,24 +160,24 @@ float FEngine::GetDeltaTime() const
 	return Renderer ? Timer.GetDeltaTime() : 0.0f;
 }
 
-UScene* FEngine::GetScene() const
+ULevel* FEngine::GetLevel() const
 {
-	return GetActiveScene();
+	return GetActiveLevel();
 }
 
-UScene* FEngine::GetActiveScene() const
-{
-	const FWorldContext* Context = FindWorldContext(EWorldType::Game);
-	return (Context && Context->World) ? Context->World->GetScene() : nullptr;
-}
-
-UScene* FEngine::GetGameScene() const
+ULevel* FEngine::GetActiveLevel() const
 {
 	const FWorldContext* Context = FindWorldContext(EWorldType::Game);
-	return (Context && Context->World) ? Context->World->GetScene() : nullptr;
+	return (Context && Context->World) ? Context->World->GetLevel() : nullptr;
 }
 
-void FEngine::ActivateGameScene() const
+ULevel* FEngine::GetGameLevel() const
+{
+	const FWorldContext* Context = FindWorldContext(EWorldType::Game);
+	return (Context && Context->World) ? Context->World->GetLevel() : nullptr;
+}
+
+void FEngine::ActivateGameLevel() const
 {
 }
 
@@ -349,7 +349,7 @@ const FWorldContext* FEngine::FindWorldContext(EWorldType WorldType) const
 	return nullptr;
 }
 
-FWorldContext* FEngine::CreateWorldContext(const FString& ContextName, EWorldType WorldType, float AspectRatio, bool bDefaultScene)
+FWorldContext* FEngine::CreateWorldContext(const FString& ContextName, EWorldType WorldType, float AspectRatio, bool bDefaultLevel)
 {
 	std::unique_ptr<FWorldContext> NewContext = std::make_unique<FWorldContext>();
 	NewContext->ContextName = ContextName;
@@ -361,7 +361,7 @@ FWorldContext* FEngine::CreateWorldContext(const FString& ContextName, EWorldTyp
 	}
 
 	NewContext->World->SetWorldType(WorldType);
-	if (bDefaultScene)
+	if (bDefaultLevel)
 	{
 		NewContext->World->InitializeWorld(AspectRatio, Renderer ? Renderer->GetDevice() : nullptr);
 	}
@@ -445,8 +445,8 @@ void FEngine::TickPhysics(float DeltaTime)
 	//	return;
 	//}
 
-	//UScene* Scene = ActiveViewportClient ? ActiveViewportClient->ResolveScene(this) : GetActiveScene();
-	//if (!Scene)
+	//ULevel* Level = ActiveViewportClient ? ActiveViewportClient->ResolveLevel(this) : GetActiveLevel();
+	//if (!Level)
 	//{
 	//	return;
 	//}
@@ -455,7 +455,7 @@ void FEngine::TickPhysics(float DeltaTime)
 	//const FVector LineEnd(5, 5, 0);
 	//FHitResult HitResult;
 
-	//const bool bHit = PhysicsManager->Linetrace(Scene, LineStart, LineEnd, HitResult);
+	//const bool bHit = PhysicsManager->Linetrace(Level, LineStart, LineEnd, HitResult);
 	//if (bHit && !HitResult.HitActor->IsA(ASkySphereActor::StaticClass()))
 	//{
 	//	for (UActorComponent* ActorComp : HitResult.HitActor->GetComponents())
@@ -486,8 +486,8 @@ void FEngine::TickPhysics(float DeltaTime)
 
 void FEngine::RenderFrame()
 {
-	UScene* Scene = ActiveViewportClient ? ActiveViewportClient->ResolveScene(this) : GetActiveScene();
-	if (!Renderer || !Scene || Renderer->IsOccluded())
+	ULevel* Level = ActiveViewportClient ? ActiveViewportClient->ResolveLevel(this) : GetActiveLevel();
+	if (!Renderer || !Level || Renderer->IsOccluded())
 	{
 		return;
 	}
@@ -520,7 +520,7 @@ void FEngine::RenderFrame()
 	if (ActiveViewportClient)
 	{
 		const FVector CameraPosition = CommandQueue.ViewMatrix.GetInverse().GetTranslation();
-		ActiveViewportClient->BuildRenderCommands(this, Scene, Frustum, FShowFlags{}, CameraPosition, CommandQueue);
+		ActiveViewportClient->BuildRenderCommands(this, Level, Frustum, FShowFlags{}, CameraPosition, CommandQueue);
 	}
 
 	Renderer->SubmitCommands(CommandQueue);

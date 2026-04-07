@@ -199,9 +199,9 @@ std::filesystem::path FPaths::AssetDir()
 	return Root / "Assets/";
 }
 
-std::filesystem::path FPaths::SceneDir()
+std::filesystem::path FPaths::LevelDir()
 {
-	return Root / "Assets/Scenes/";
+	return Root / "Assets/Levels/";
 }
 
 std::filesystem::path FPaths::MaterialDir()

@@ -14,7 +14,7 @@
 
 class FWindowsWindow;
 class AActor;
-class UScene;
+class ULevel;
 class UWorld;
 class FInputManager;
 class FEnhancedInputManager;
@@ -68,13 +68,13 @@ public:
 	const TArray<std::unique_ptr<FWorldContext>>& GetWorldContexts() const { return WorldContexts; }
 
 	/** 기본적으로 현재 활성 씬을 반환한다. 에디터 엔진은 이를 재정의해 다른 씬을 선택할 수 있다. */
-	virtual UScene* GetScene() const;
+	virtual ULevel* GetLevel() const;
 	/** 현재 렌더링/상호작용 대상인 활성 씬을 반환한다. */
-	virtual UScene* GetActiveScene() const;
+	virtual ULevel* GetActiveLevel() const;
 	/** 게임 플레이용 기본 씬을 반환한다. */
-	virtual UScene* GetGameScene() const;
+	virtual ULevel* GetGameLevel() const;
 	/** 필요 시 게임 씬을 활성 씬으로 전환하도록 파생 클래스가 구현한다. */
-	virtual void ActivateGameScene() const;
+	virtual void ActivateGameLevel() const;
 
 	/** 현재 활성 월드를 반환한다. */
 	virtual UWorld* GetActiveWorld() const;
@@ -111,7 +111,7 @@ protected:
 	/** const 버전의 월드 타입 검색 함수다. */
 	const FWorldContext* FindWorldContext(EWorldType WorldType) const;
 	/** 새 월드 컨텍스트를 만들고, 필요하면 기본 씬까지 바로 초기화한다. */
-	FWorldContext* CreateWorldContext(const FString& ContextName, EWorldType WorldType, float AspectRatio, bool bDefaultScene);
+	FWorldContext* CreateWorldContext(const FString& ContextName, EWorldType WorldType, float AspectRatio, bool bDefaultLevel);
 	/** 월드 컨텍스트를 정리하고 내부 목록에서 제거한다. */
 	void DestroyWorldContext(FWorldContext* Context);
 	/** 월드의 카메라 종횡비를 창 크기에 맞게 맞춘다. */

@@ -61,6 +61,14 @@ void UMeshComponent::Serialize(FArchive& Ar)
 	}
 }
 
+void UMeshComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UPrimitiveComponent::CopyPropertiesFrom(Source);
+	const UMeshComponent* SourceComp = static_cast<const UMeshComponent*>(Source);
+
+	this->Materials = SourceComp->Materials;
+}
+
 /*
 void UMeshComponent::Serialize(FArchive& Ar)
 {

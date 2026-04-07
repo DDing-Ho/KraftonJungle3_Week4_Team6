@@ -15,7 +15,7 @@ struct FVertex;
 struct FRenderMesh;
 class FPixelShader;
 class FMaterial;
-class UScene;
+class ULevel;
 
 using FGUICallback = std::function<void()>;
 class FRenderer;
@@ -56,14 +56,14 @@ public:
 	void OnResize(int32 NewWidth, int32 NewHeight);
 
 	/** 특정 뷰포트용 렌더 타깃을 임시로 사용하도록 설정한다. */
-	void SetSceneRenderTarget(ID3D11RenderTargetView* InRenderTargetView, ID3D11DepthStencilView* InDepthStencilView, const D3D11_VIEWPORT& InViewport);
+	void SetLevelRenderTarget(ID3D11RenderTargetView* InRenderTargetView, ID3D11DepthStencilView* InDepthStencilView, const D3D11_VIEWPORT& InViewport);
 	/** 임시 씬 렌더 타깃 오버라이드를 해제하고 스왑체인 백버퍼로 되돌린다. */
-	void ClearSceneRenderTarget();
+	void ClearLevelRenderTarget();
 
 	/** 외부 패스가 자체 RTV/DSV/뷰포트를 쓰고 싶을 때 렌더 상태를 그쪽으로 전환한다. */
-	void BeginScenePass(ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, const D3D11_VIEWPORT& InVP);
-	/** BeginScenePass와 쌍을 이루는 종료 훅이다. 현재는 자리만 잡아둔 상태다. */
-	void EndScenePass();
+	void BeginLevelPass(ID3D11RenderTargetView* InRTV, ID3D11DepthStencilView* InDSV, const D3D11_VIEWPORT& InVP);
+	/** BeginLevelPass와 쌍을 이루는 종료 훅이다. 현재는 자리만 잡아둔 상태다. */
+	void EndLevelPass();
 	/** 렌더 타깃을 다시 스왑체인 백버퍼로 바인딩한다. */
 	void BindSwapChainRTV();
 
@@ -173,10 +173,10 @@ private:
 	FMatrix ProjectionMatrix;
 	D3D11_VIEWPORT Viewport = {};
 
-	ID3D11RenderTargetView* SceneRenderTargetView = nullptr;
-	ID3D11DepthStencilView* SceneDepthStencilView = nullptr;
-	D3D11_VIEWPORT SceneViewport = {};
-	bool bUseSceneRenderTargetOverride = false;
+	ID3D11RenderTargetView* LevelRenderTargetView = nullptr;
+	ID3D11DepthStencilView* LevelDepthStencilView = nullptr;
+	D3D11_VIEWPORT LevelViewport = {};
+	bool bUseLevelRenderTargetOverride = false;
 	bool bVSyncEnabled = false;
 
 	/** 이번 프레임에 실제 실행할 렌더 커맨드 리스트다. */

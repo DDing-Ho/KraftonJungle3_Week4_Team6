@@ -549,7 +549,7 @@ void FObjViewerShell::DetachFromRenderer(FRenderer* InRenderer)
 
 	if (InRenderer)
 	{
-		InRenderer->ClearSceneRenderTarget();
+		InRenderer->ClearLevelRenderTarget();
 		InRenderer->ClearViewportCallbacks();
 	}
 }

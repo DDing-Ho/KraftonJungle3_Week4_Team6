@@ -17,7 +17,7 @@ public:
 	static std::filesystem::path EngineDir();
 	static std::filesystem::path ShaderDir();
 	static std::filesystem::path AssetDir();
-	static std::filesystem::path SceneDir();
+	static std::filesystem::path LevelDir();
 	static std::filesystem::path MaterialDir();
 	static std::filesystem::path MeshDir();
 	static std::filesystem::path TextureDir();

@@ -1,6 +1,6 @@
 #include "Picker.h"
 
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Actor/Actor.h"
 #include "Camera/Camera.h"
 #include "Component/PrimitiveComponent.h"
@@ -144,7 +144,7 @@ bool FPicker::RayTriangleIntersect(const FRay& Ray,
 	return false;
 }
 
-AActor* FPicker::PickActor(UScene* Scene, const FViewportEntry* Entry, int32 ScreenX, int32 ScreenY) const
+AActor* FPicker::PickActor(ULevel* Level, const FViewportEntry* Entry, int32 ScreenX, int32 ScreenY) const
 {
 	if (!Entry)
 	{
@@ -156,7 +156,7 @@ AActor* FPicker::PickActor(UScene* Scene, const FViewportEntry* Entry, int32 Scr
 	AActor* ClosestActor = nullptr;
 	float ClosestDistance = (std::numeric_limits<float>::max)();
 
-	for (AActor* Actor : Scene->GetActors())
+	for (AActor* Actor : Level->GetActors())
 	{
 		// 액터가 파괴 대기 중이거나 보이지 않으면 패스
 		if (!Actor || Actor->IsPendingDestroy() || !Actor->IsVisible())

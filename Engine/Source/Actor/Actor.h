@@ -5,7 +5,7 @@
 
 class UActorComponent;
 class USceneComponent;
-class UScene;
+class ULevel;
 
 class FArchive;
 class ENGINE_API AActor : public UObject
@@ -15,9 +15,9 @@ public:
 	~AActor() override = default;
 
 	/** 자신이 속한 씬을 반환한다. */
-	UScene* GetScene() const;
+	ULevel* GetLevel() const;
 	/** 씬 등록 시 호출되며, 이 액터의 소속 씬을 갱신한다. */
-	void SetScene(UScene* InScene);
+	void SetLevel(ULevel* InLevel);
 	/** 소속 씬의 Outer를 따라가 현재 월드를 찾아 반환한다. */
 	UWorld* GetWorld() const;
 	// ULevel* GetLevel() const { return Level;
@@ -75,8 +75,13 @@ public:
 	bool IsVisible() const { return bVisible; }
 	void SetVisible(bool bInVisible) { bVisible = bInVisible; }
 
+	void FixupReferences(const FDuplicateionContext& Context) override;
 protected:
-	TObjectPtr<UScene> Scene;
+	void CopyPropertiesFrom(const UObject* Source) override;
+	void DuplicateSubObjects(FDuplicateionContext& Context) override;
+
+protected:
+	TObjectPtr<ULevel> Level;
 	//ULevel* Level = nullptr;
 
 	USceneComponent* RootComponent = nullptr;

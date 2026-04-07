@@ -124,6 +124,13 @@ public:
 	/** 이 객체가 삭제 예정 상태인지 확인한다. */
 	bool IsPendingKill() const;
 
+	virtual UObject* Duplicate(FDuplicateionContext& Context, UObject* NewOuter = nullptr);
+	virtual void FixupReferences(const FDuplicateionContext& Context);
+
+protected:
+	virtual void CopyPropertiesFrom(const UObject* Source);
+	virtual void DuplicateSubObjects(FDuplicateionContext& Context);
+
 private:
 	FString			Name;
 	UObject*		Outer = nullptr;

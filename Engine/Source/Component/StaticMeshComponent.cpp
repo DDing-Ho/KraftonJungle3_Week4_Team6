@@ -46,6 +46,14 @@ FBoxSphereBounds UStaticMeshComponent::GetLocalBounds() const
 	return UPrimitiveComponent::GetLocalBounds();
 }
 
+void UStaticMeshComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UMeshComponent::CopyPropertiesFrom(Source);
+	const UStaticMeshComponent* SourceComp = static_cast<const UStaticMeshComponent*>(Source);
+
+	this->StaticMesh = SourceComp->StaticMesh;
+}
+
 FBoxSphereBounds UStaticMeshComponent::CalcBounds(const FMatrix& LocalToWorld) const
 {
 	return UPrimitiveComponent::CalcBounds(LocalToWorld);

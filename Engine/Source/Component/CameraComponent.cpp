@@ -74,3 +74,16 @@ void UCameraComponent::SetSensitivity(float InSetSensitivity)
 {
 	Camera->SetMouseSensitivity(InSetSensitivity);
 }
+
+void UCameraComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	USceneComponent::CopyPropertiesFrom(Source);
+	const UCameraComponent* SourceComp = static_cast<const UCameraComponent*>(Source);
+
+	if (this->Camera && SourceComp->Camera)
+	{
+		this->SetFov(SourceComp->GetCamera()->GetFOV());
+		this->SetSpeed(SourceComp->GetCamera()->GetSpeed());
+		this->SetSensitivity(SourceComp->GetCamera()->GetMouseSensitivity());
+	}
+}

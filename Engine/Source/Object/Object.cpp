@@ -1,4 +1,7 @@
 #include "Object/Object.h"
+
+#include "ObjectFactory.h"
+#include "../../../ObjViewer/Source/ObjViewerEngine.h"
 #include "Object/Class.h"
 #include "Memory/MemoryBase.h"
 
@@ -159,4 +162,34 @@ void UObject::MarkPendingKill()
 bool UObject::IsPendingKill() const
 {
 	return HasAnyFlags(EObjectFlags::PendingKill);
+}
+
+UObject* UObject::Duplicate(FDuplicateionContext& Context, UObject* NewOuter)
+{
+	UObject* ActualOuter = NewOuter ? NewOuter : this->GetOuter();
+	UObject* NewObj = FObjectFactory::ConstructObject(this->GetClass(), ActualOuter, this->GetName());
+
+	if (!NewObj) return nullptr;
+
+	Context.DuplicatedObjects[this] = NewObj;
+
+	NewObj->CopyPropertiesFrom(this);
+
+	NewObj->DuplicateSubObjects(Context);
+
+	return NewObj;
+}
+
+void UObject::FixupReferences(const FDuplicateionContext& Context)
+{
+}
+
+void UObject::CopyPropertiesFrom(const UObject* Source)
+{
+	if (!Source) return;
+	this->Flags = Source->Flags;
+}
+
+void UObject::DuplicateSubObjects(FDuplicateionContext& Context)
+{
 }

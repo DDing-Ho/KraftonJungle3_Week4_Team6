@@ -140,3 +140,13 @@ const FString& UStaticMesh::GetAssetPathFileName() const
 	static FString EmptyPath = "";
 	return EmptyPath;
 }
+
+void UStaticMesh::CopyPropertiesFrom(const UObject* Source)
+{
+	UObject::CopyPropertiesFrom(Source);
+	const UStaticMesh* SourceMesh = static_cast<const UStaticMesh*>(Source);
+
+	this->StaticMeshAsset = SourceMesh->StaticMeshAsset;
+	this->LocalBounds = SourceMesh->LocalBounds;
+	this->DefaultMaterials = SourceMesh->DefaultMaterials;
+}

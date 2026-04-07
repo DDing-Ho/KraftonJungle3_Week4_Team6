@@ -20,3 +20,20 @@ void ACubeActor::PostSpawnInitialize()
 
 	AActor::PostSpawnInitialize();
 }
+
+void ACubeActor::FixupReferences(const FDuplicateionContext& Context)
+{
+	AActor::FixupReferences(Context);
+	if (this->CubeMeshComponent)
+	{
+		this->CubeMeshComponent = static_cast<UStaticMeshComponent*>(Context.GetMappedObject(this->CubeMeshComponent));
+	}
+}
+
+void ACubeActor::CopyPropertiesFrom(const UObject* Source)
+{
+	AActor::CopyPropertiesFrom(Source);
+	const ACubeActor* SourceActor = static_cast<const ACubeActor*>(Source);
+
+	this->CubeMeshComponent = SourceActor->CubeMeshComponent;
+}

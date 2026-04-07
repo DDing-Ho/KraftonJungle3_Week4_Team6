@@ -9,6 +9,6 @@ public:
 	void Render(FEditorEngine* Engine);
 
 private:
-	TArray<FString> SceneFiles;
-	int32 SelectedSceneIndex = -1;
+	TArray<FString> LevelFiles;
+	int32 SelectedLevelIndex = -1;
 };

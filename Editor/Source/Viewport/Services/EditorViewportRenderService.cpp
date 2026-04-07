@@ -8,7 +8,7 @@
 #include "Math/Frustum.h"
 #include "Renderer/Material.h"
 #include "Renderer/Renderer.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "UI/EditorUI.h"
 #include "Viewport/BlitRenderer.h"
 #include "Viewport/Viewport.h"
@@ -62,8 +62,8 @@ void FEditorViewportRenderService::RenderAll(
 		return;
 	}
 
-	UScene* Scene = Engine->GetScene();
-	if (!Scene)
+	ULevel* Level = Engine->GetLevel();
+	if (!Level)
 	{
 		return;
 	}
@@ -99,7 +99,7 @@ void FEditorViewportRenderService::RenderAll(
 		Context->ClearRenderTargetView(RTV, ClearColor);
 		Context->ClearDepthStencilView(DSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-		Renderer->BeginScenePass(RTV, DSV, Viewport);
+		Renderer->BeginLevelPass(RTV, DSV, Viewport);
 
 		const float AspectRatio = static_cast<float>(Rect.Width) / static_cast<float>(Rect.Height);
 		FRenderCommandQueue Queue;
@@ -110,7 +110,7 @@ void FEditorViewportRenderService::RenderAll(
 		FFrustum Frustum;
 		Frustum.ExtractFromVP(Queue.ViewMatrix * Queue.ProjectionMatrix);
 		const FVector CameraPosition = Queue.ViewMatrix.GetInverse().GetTranslation();
-		BuildRenderCommands(Engine, Scene, Frustum, Entry.LocalState.ShowFlags, CameraPosition, Queue);
+		BuildRenderCommands(Engine, Level, Frustum, Entry.LocalState.ShowFlags, CameraPosition, Queue);
 
 		AActor* GizmoTarget = EditorEngine->GetSelectedActor();
 		if (GizmoTarget && GizmoTarget->GetComponentByClass<USkyComponent>() == nullptr)
@@ -147,7 +147,7 @@ void FEditorViewportRenderService::RenderAll(
 		Renderer->SubmitCommands(Queue);
 		Renderer->ExecuteCommands();
 		EditorEngine->FlushDebugDrawForViewport(Renderer, Entry.LocalState.ShowFlags, false);
-		Renderer->EndScenePass();
+		Renderer->EndLevelPass();
 	}
 	EditorEngine->ClearDebugDrawForFrame();
 

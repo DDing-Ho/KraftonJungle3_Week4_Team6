@@ -14,11 +14,11 @@ class UCameraComponent;
 class UPrimitiveComponent;
 struct FRenderCommandQueue;
 
-class ENGINE_API UScene : public UObject
+class ENGINE_API ULevel : public UObject
 {
 public:
-	DECLARE_RTTI(UScene, UObject)
-	~UScene();
+	DECLARE_RTTI(ULevel, UObject)
+	~ULevel();
 
 	/** 지정한 액터 타입을 생성하고 씬에 등록한 뒤 PostSpawnInitialize까지 호출한다. */
 	template <typename T>
@@ -49,9 +49,9 @@ public:
 	/** 자신이 속한 월드의 타입을 그대로 노출한다. */
 	EWorldType GetWorldType() const;
 	/** 현재 씬이 에디터용 월드에 속하는지 검사한다. */
-	bool IsEditorScene() const;
+	bool IsEditorLevel() const;
 	/** 현재 씬이 게임/PIE 월드에 속하는지 검사한다. */
-	bool IsGameScene() const;
+	bool IsGameLevel() const;
 	/** 씬이 사용할 카메라를 월드로부터 가져온다. */
 	FCamera* GetCamera() const;
 
@@ -61,6 +61,11 @@ public:
 	void BeginPlay();
 	/** 씬 안의 액터를 순회하며 Tick하고, 끝나면 파괴 대상을 정리한다. */
 	void Tick(float DeltaTime);
+
+
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+	void DuplicateSubObjects(FDuplicateionContext& Context) override;
 
 private:
 	TArray<AActor*> Actors;

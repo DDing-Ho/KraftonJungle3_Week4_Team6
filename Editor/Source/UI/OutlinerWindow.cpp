@@ -4,7 +4,7 @@
 #include "EditorEngine.h"
 #include "Core/ShowFlags.h"
 #include "Core/ViewportClient.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Actor/Actor.h"
 #include "Component/SubUVComponent.h"
 #include "Component/TextComponent.h"
@@ -20,7 +20,7 @@ void FOutlinerWindow::Render(FEditorEngine* Engine)
 		ImGui::End();
 		return;
 	}
-	if (!Engine || !Engine->GetScene())
+	if (!Engine || !Engine->GetLevel())
 	{
 		ImGui::End();
 		return;
@@ -31,8 +31,8 @@ void FOutlinerWindow::Render(FEditorEngine* Engine)
 
 	ImGui::SeparatorText("Actors");
 
-	UScene* Scene = Engine->GetScene();
-	const TArray<AActor*>& Actors = Scene->GetActors();
+	ULevel* Level = Engine->GetLevel();
+	const TArray<AActor*>& Actors = Level->GetActors();
 	
 
 	for (AActor* Actor : Actors)

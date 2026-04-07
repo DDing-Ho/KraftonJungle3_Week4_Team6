@@ -65,10 +65,10 @@ void FPreviewViewportClient::Render(FEngine* Engine, FRenderer* Renderer)
 		return;
 	}
 
-	UScene* Scene = ResolveScene(Engine);
+	ULevel* Level = ResolveLevel(Engine);
 	UWorld* ActiveWorld = ResolveWorld(Engine);
 
-	if (Scene && ActiveWorld)
+	if (Level && ActiveWorld)
 	{
 		UCameraComponent* ActiveCamera = ActiveWorld->GetActiveCameraComponent();
 		if (ActiveCamera)
@@ -82,7 +82,7 @@ void FPreviewViewportClient::Render(FEngine* Engine, FRenderer* Renderer)
 			Frustum.ExtractFromVP(Queue.ViewMatrix * Queue.ProjectionMatrix);
 
 			const FVector CameraPosition = Queue.ViewMatrix.GetInverse().GetTranslation();
-			BuildRenderCommands(Engine, Scene, Frustum, FShowFlags{}, CameraPosition, Queue);
+			BuildRenderCommands(Engine, Level, Frustum, FShowFlags{}, CameraPosition, Queue);
 			Renderer->SubmitCommands(Queue);
 			Renderer->ExecuteCommands();
 		}
@@ -91,7 +91,7 @@ void FPreviewViewportClient::Render(FEngine* Engine, FRenderer* Renderer)
 	EditorUI.Render();
 }
 
-UScene* FPreviewViewportClient::ResolveScene(FEngine* Engine) const
+ULevel* FPreviewViewportClient::ResolveLevel(FEngine* Engine) const
 {
 	FEditorEngine* EditorEngine = static_cast<FEditorEngine*>(Engine);
 	if (!EditorEngine)
@@ -99,11 +99,11 @@ UScene* FPreviewViewportClient::ResolveScene(FEngine* Engine) const
 		return nullptr;
 	}
 
-	if (UScene* PreviewScene = EditorEngine->GetPreviewScene(PreviewContextName))
+	if (ULevel* PreviewLevel = EditorEngine->GetPreviewLevel(PreviewContextName))
 	{
-		return PreviewScene;
+		return PreviewLevel;
 	}
 
-	return EditorEngine->GetActiveScene();
+	return EditorEngine->GetActiveLevel();
 }
 

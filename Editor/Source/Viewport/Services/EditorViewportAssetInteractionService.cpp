@@ -13,6 +13,8 @@
 #include <Windows.h>
 #include <algorithm>
 #include <filesystem>
+
+#include "Actor/StaticMeshActor.h"
 #include "Component/StaticMeshComponent.h"
 #include "Asset/ObjManager.h"
 
@@ -42,11 +44,11 @@ void FEditorViewportAssetInteractionService::HandleFileDoubleClick(
 	}
 
 	Engine->SetSelectedActor(nullptr);
-	Engine->GetScene()->ClearActors();
+	Engine->GetLevel()->ClearActors();
 
 	FCameraSerializeData CameraData;
 	const bool bLoaded = FSceneSerializer::Load(
-		Engine->GetScene(),
+		Engine->GetLevel(),
 		FilePath,
 		Engine->GetRenderer()->GetDevice(),
 		&CameraData);
@@ -55,7 +57,7 @@ void FEditorViewportAssetInteractionService::HandleFileDoubleClick(
 	{
 		MessageBoxW(
 			nullptr,
-			L"Scene 정보가 올바르지 않습니다.",
+			L"Level 정보가 올바르지 않습니다.",
 			L"Error",
 			MB_OK | MB_ICONWARNING);
 		return;
@@ -92,7 +94,7 @@ void FEditorViewportAssetInteractionService::HandleFileDoubleClick(
 		}
 	}
 
-	UE_LOG("Scene loaded: %s", FilePath.c_str());
+	UE_LOG("Level loaded: %s", FilePath.c_str());
 }
 
 void FEditorViewportAssetInteractionService::HandleFileDropOnViewport(
@@ -123,7 +125,7 @@ void FEditorViewportAssetInteractionService::HandleFileDropOnViewport(
 
 	const FRay Ray = Picker.ScreenToRay(*Entry, ScreenMouseX, ScreenMouseY);
 
-	AActor* NewActor = Engine->GetScene()->SpawnActor<AActor>("DroppedObjActor");
+	AActor* NewActor = Engine->GetLevel()->SpawnActor<AStaticMeshActor>("DroppedObjActor");
 	if (!NewActor)
 	{
 		return;

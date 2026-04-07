@@ -4,27 +4,27 @@
 #include "Scene/WorldTypes.h"
 
 class AActor;
-class UScene;
+class ULevel;
 
-struct ENGINE_API FSceneContext
+struct ENGINE_API FLevelContext
 {
 	FString ContextName;
 	EWorldType WorldType = EWorldType::Game;
-	UScene* Scene = nullptr;
+	ULevel* Level = nullptr;
 
-	bool IsValid() const { return Scene != nullptr; }
+	bool IsValid() const { return Level != nullptr; }
 	void Reset()
 	{
 		ContextName.clear();
 		WorldType = EWorldType::Game;
-		Scene = nullptr;
+		Level = nullptr;
 	}
 };
 
-struct ENGINE_API FEditorSceneContext : public FSceneContext
+struct ENGINE_API FEditorLevelContext : public FLevelContext
 {
 	void Reset()
 	{
-		FSceneContext::Reset();
+		FLevelContext::Reset();
 	}
 };

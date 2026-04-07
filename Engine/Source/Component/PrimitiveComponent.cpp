@@ -46,6 +46,14 @@ FBoxSphereBounds UPrimitiveComponent::CalcBounds(const FMatrix& LocalToWorld) co
 	return { Center, WorldBoxExtent.Size(), WorldBoxExtent };
 }
 
+void UPrimitiveComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	USceneComponent::CopyPropertiesFrom(Source);
+	const UPrimitiveComponent* SourceComp = static_cast<const UPrimitiveComponent*>(Source);
+	this->Bounds = SourceComp->Bounds;
+	this->bDrawDebugBounds = SourceComp->bDrawDebugBounds;
+}
+
 /*
 void UPrimitiveComponent::Serialize(FArchive& Ar)
 {

@@ -1,5 +1,5 @@
 #include "PhysicsManager.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Math/Vector.h"
 #include "Math/MathUtility.h"
 #include "Actor/Actor.h"
@@ -8,9 +8,9 @@
 #include "Component/UUIDBillboardComponent.h"
 #include "Component/TextComponent.h"
 
-bool FPhysicsManager::Linetrace(const UScene* Scene, const FVector& Start, const FVector& End, FHitResult& OutHit)
+bool FPhysicsManager::Linetrace(const ULevel* Level, const FVector& Start, const FVector& End, FHitResult& OutHit)
 {
-	const TArray<AActor*>& Actors = Scene->GetActors();
+	const TArray<AActor*>& Actors = Level->GetActors();
 
 	FVector LineDirection = End - Start;
 	LineDirection.Normalize();

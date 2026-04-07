@@ -39,12 +39,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---------------------------------------------------------------------------
 */
 
-/** @file scene.h
- *  @brief Defines the data structures in which the imported scene is returned.
+/** @file Level.h
+ *  @brief Defines the data structures in which the imported Level is returned.
  */
 #pragma once
-#ifndef AI_SCENE_H_INC
-#define AI_SCENE_H_INC
+#ifndef AI_Level_H_INC
+#define AI_Level_H_INC
 
 #ifdef __GNUC__
 #   pragma GCC system_header
@@ -76,7 +76,7 @@ extern "C" {
  * Each node has name, a parent node (except for the root node),
  * a transformation relative to its parent and possibly several child nodes.
  * Simple file formats don't support hierarchical structures - for these formats
- * the imported scene does consist of only a single root node without children.
+ * the imported Level does consist of only a single root node without children.
  */
 // -------------------------------------------------------------------------------
 struct ASSIMP_API aiNode {
@@ -120,7 +120,7 @@ struct ASSIMP_API aiNode {
     unsigned int mNumMeshes;
 
     /** The meshes of this node. Each entry is an index into the
-      * mesh list of the #aiScene.
+      * mesh list of the #aiLevel.
       */
     unsigned int* mMeshes;
 
@@ -144,7 +144,7 @@ struct ASSIMP_API aiNode {
     /**
      *  @brief Searches for a node with a specific name, beginning at this
      *  nodes. Normally you will call this method on the root node
-     *  of the scene.
+     *  of the Level.
      *
      *  @param name Name to search for
      *  @return nullptr or a valid Node if the search was successful.
@@ -166,7 +166,7 @@ struct ASSIMP_API aiNode {
     aiNode* FindNode(const char* name);
 
     // ------------------------------------------------------------------------------------------------
-    // Helper to find the node associated with a bone in the scene
+    // Helper to find the node associated with a bone in the Level
     const aiNode *findBoneNode(const aiBone *bone) const {
         if (bone == nullptr) {
             return nullptr;
@@ -207,19 +207,19 @@ struct ASSIMP_API aiNode {
 
 // -------------------------------------------------------------------------------
 /**
- * Specifies that the scene data structure that was imported is not complete.
+ * Specifies that the Level data structure that was imported is not complete.
  * This flag bypasses some internal validations and allows the import
  * of animation skeletons, material libraries or camera animation paths
  * using Assimp. Most applications won't support such data.
  */
-#define AI_SCENE_FLAGS_INCOMPLETE   0x1
+#define AI_Level_FLAGS_INCOMPLETE   0x1
 
 /**
  * This flag is set by the validation postprocess-step (aiPostProcess_ValidateDS)
- * if the validation is successful. In a validated scene you can be sure that
+ * if the validation is successful. In a validated Level you can be sure that
  * any cross references in the data structure (e.g. vertex indices) are valid.
  */
-#define AI_SCENE_FLAGS_VALIDATED    0x2
+#define AI_Level_FLAGS_VALIDATED    0x2
 
 /**
  * This flag is set by the validation postprocess-step (aiPostProcess_ValidateDS)
@@ -229,7 +229,7 @@ struct ASSIMP_API aiNode {
  * In most cases you should still be able to use the import. This flag could
  * be useful for applications which don't capture Assimp's log output.
  */
-#define AI_SCENE_FLAGS_VALIDATION_WARNING   0x4
+#define AI_Level_FLAGS_VALIDATION_WARNING   0x4
 
 /**
  * This flag is currently only set by the aiProcess_JoinIdenticalVertices step.
@@ -237,7 +237,7 @@ struct ASSIMP_API aiNode {
  * verbose format anymore. In the verbose format all vertices are unique,
  * no vertex is ever referenced by more than one face.
  */
-#define AI_SCENE_FLAGS_NON_VERBOSE_FORMAT   0x8
+#define AI_Level_FLAGS_NON_VERBOSE_FORMAT   0x8
 
  /**
  * Denotes pure height-map terrain data. Pure terrains usually consist of quads,
@@ -251,15 +251,15 @@ struct ASSIMP_API aiNode {
  * as long as possible (typically you'll do the triangulation when you actually
  * need to render it).
  */
-#define AI_SCENE_FLAGS_TERRAIN 0x10
+#define AI_Level_FLAGS_TERRAIN 0x10
 
  /**
- * Specifies that the scene data can be shared between structures. For example:
- * one vertex in few faces. \ref AI_SCENE_FLAGS_NON_VERBOSE_FORMAT can not be
- * used for this because \ref AI_SCENE_FLAGS_NON_VERBOSE_FORMAT has internal
+ * Specifies that the Level data can be shared between structures. For example:
+ * one vertex in few faces. \ref AI_Level_FLAGS_NON_VERBOSE_FORMAT can not be
+ * used for this because \ref AI_Level_FLAGS_NON_VERBOSE_FORMAT has internal
  * meaning about postprocessing steps.
  */
-#define AI_SCENE_FLAGS_ALLOW_SHARED			0x20
+#define AI_Level_FLAGS_ALLOW_SHARED			0x20
 
 // -------------------------------------------------------------------------------
 /** The root structure of the imported data.
@@ -267,13 +267,13 @@ struct ASSIMP_API aiNode {
  *  Everything that was imported from the given file can be accessed from here.
  *  Objects of this class are generally maintained and owned by Assimp, not
  *  by the caller. You shouldn't want to instance it, nor should you ever try to
- *  delete a given scene on your own.
+ *  delete a given Level on your own.
  */
 // -------------------------------------------------------------------------------
-struct ASSIMP_API aiScene {
-    /** Any combination of the AI_SCENE_FLAGS_XXX flags. By default
+struct ASSIMP_API aiLevel {
+    /** Any combination of the AI_Level_FLAGS_XXX flags. By default
     * this value is 0, no flags are set. Most applications will
-    * want to reject all scenes with the AI_SCENE_FLAGS_INCOMPLETE
+    * want to reject all Levels with the AI_Level_FLAGS_INCOMPLETE
     * bit set.
     */
     unsigned int mFlags;
@@ -287,31 +287,31 @@ struct ASSIMP_API aiScene {
     */
     C_STRUCT aiNode* mRootNode;
 
-    /** The number of meshes in the scene. */
+    /** The number of meshes in the Level. */
     unsigned int mNumMeshes;
 
     /** The array of meshes.
     *
     * Use the indices given in the aiNode structure to access
     * this array. The array is mNumMeshes in size. If the
-    * AI_SCENE_FLAGS_INCOMPLETE flag is not set there will always
+    * AI_Level_FLAGS_INCOMPLETE flag is not set there will always
     * be at least ONE material.
     */
     C_STRUCT aiMesh** mMeshes;
 
-    /** The number of materials in the scene. */
+    /** The number of materials in the Level. */
     unsigned int mNumMaterials;
 
     /** The array of materials.
     *
     * Use the index given in each aiMesh structure to access this
     * array. The array is mNumMaterials in size. If the
-    * AI_SCENE_FLAGS_INCOMPLETE flag is not set there will always
+    * AI_Level_FLAGS_INCOMPLETE flag is not set there will always
     * be at least ONE material.
     */
     C_STRUCT aiMaterial** mMaterials;
 
-    /** The number of animations in the scene. */
+    /** The number of animations in the Level. */
     unsigned int mNumAnimations;
 
     /** The array of animations.
@@ -332,7 +332,7 @@ struct ASSIMP_API aiScene {
     */
     C_STRUCT aiTexture** mTextures;
 
-    /** The number of light sources in the scene. Light sources
+    /** The number of light sources in the Level. Light sources
     * are fully optional, in most cases this attribute will be 0
         */
     unsigned int mNumLights;
@@ -344,7 +344,7 @@ struct ASSIMP_API aiScene {
     */
     C_STRUCT aiLight** mLights;
 
-    /** The number of cameras in the scene. Cameras
+    /** The number of cameras in the Level. Cameras
     * are fully optional, in most cases this attribute will be 0
         */
     unsigned int mNumCameras;
@@ -354,20 +354,20 @@ struct ASSIMP_API aiScene {
     * All cameras imported from the given file are listed here.
     * The array is mNumCameras in size. The first camera in the
     * array (if existing) is the default camera view into
-    * the scene.
+    * the Level.
     */
     C_STRUCT aiCamera** mCameras;
 
     /**
-     *  @brief  The global metadata assigned to the scene itself.
+     *  @brief  The global metadata assigned to the Level itself.
      *
-     *  This data contains global metadata which belongs to the scene like
+     *  This data contains global metadata which belongs to the Level like
      *  unit-conversions, versions, vendors or other model-specific data. This
      *  can be used to store format-specific metadata as well.
      */
     C_STRUCT aiMetadata* mMetaData;
 
-    /** The name of the scene itself.
+    /** The name of the Level itself.
      */
     C_STRUCT aiString mName;
 
@@ -384,44 +384,44 @@ struct ASSIMP_API aiScene {
 #ifdef __cplusplus
 
     //! Default constructor - set everything to 0/nullptr
-    aiScene();
+    aiLevel();
 
     //! Destructor
-    ~aiScene();
+    ~aiLevel();
 
-    //! Check whether the scene contains meshes
-    //! Unless no special scene flags are set this will always be true.
+    //! Check whether the Level contains meshes
+    //! Unless no special Level flags are set this will always be true.
     inline bool HasMeshes() const {
         return mMeshes != nullptr && mNumMeshes > 0;
     }
 
-    //! Check whether the scene contains materials
-    //! Unless no special scene flags are set this will always be true.
+    //! Check whether the Level contains materials
+    //! Unless no special Level flags are set this will always be true.
     inline bool HasMaterials() const {
         return mMaterials != nullptr && mNumMaterials > 0;
     }
 
-    //! Check whether the scene contains lights
+    //! Check whether the Level contains lights
     inline bool HasLights() const {
         return mLights != nullptr && mNumLights > 0;
     }
 
-    //! Check whether the scene contains textures
+    //! Check whether the Level contains textures
     inline bool HasTextures() const {
         return mTextures != nullptr && mNumTextures > 0;
     }
 
-    //! Check whether the scene contains cameras
+    //! Check whether the Level contains cameras
     inline bool HasCameras() const {
         return mCameras != nullptr && mNumCameras > 0;
     }
 
-    //! Check whether the scene contains animations
+    //! Check whether the Level contains animations
     inline bool HasAnimations() const {
         return mAnimations != nullptr && mNumAnimations > 0;
     }
 
-    //! Check whether the scene contains skeletons
+    //! Check whether the Level contains skeletons
     inline bool HasSkeletons() const {
         return mSkeletons != nullptr && mNumSkeletons > 0;
     }
@@ -511,4 +511,4 @@ struct ASSIMP_API aiScene {
 }
 #endif //! extern "C"
 
-#endif // AI_SCENE_H_INC
+#endif // AI_Level_H_INC

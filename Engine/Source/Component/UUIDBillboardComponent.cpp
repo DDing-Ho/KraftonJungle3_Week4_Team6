@@ -83,3 +83,12 @@ FBoxSphereBounds UUUIDBillboardComponent::GetWorldBounds() const
 
 	return { Center, Extent.Size(), Extent };
 }
+
+void UUUIDBillboardComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UTextComponent::CopyPropertiesFrom(Source);
+
+	const UUUIDBillboardComponent* SourceComp = static_cast<const UUUIDBillboardComponent*>(Source);
+
+	this->WorldOffset = SourceComp->WorldOffset;
+}

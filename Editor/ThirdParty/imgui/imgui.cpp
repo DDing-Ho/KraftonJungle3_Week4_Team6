@@ -15124,7 +15124,7 @@ static void NavUpdateWindowingTarget(int focus_change_dir)
 // Apply focus and close overlay
 static void ImGui::NavUpdateWindowingApplyFocus(ImGuiWindow* apply_focus_window)
 {
-    // FIXME: Many actions here could be part of a higher-level/reused function. Why aren't they in FocusWindow() ?
+    // FIXME: Many actions here could be part of a higher-Scene/reused function. Why aren't they in FocusWindow() ?
     // Investigate for each of them: ClearActiveID(), NavRestoreHighlightAfterMove(), NavRestoreLastChildNavWindow(), ClosePopupsOverWindow(), NavInitWindow()
     ImGuiContext& g = *GImGui;
     if (g.NavWindow == NULL || apply_focus_window != g.NavWindow->RootWindow)

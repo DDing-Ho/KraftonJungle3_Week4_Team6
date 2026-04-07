@@ -2117,7 +2117,7 @@ void ImDrawList::AddConcavePolyFilled(const ImVec2* points, const int points_cou
 //-----------------------------------------------------------------------------
 // [SECTION] ImDrawListSplitter
 //-----------------------------------------------------------------------------
-// FIXME: This may be a little confusing, trying to be a little too low-level/optimal instead of just doing vector swap..
+// FIXME: This may be a little confusing, trying to be a little too low-Scene/optimal instead of just doing vector swap..
 //-----------------------------------------------------------------------------
 
 void ImDrawListSplitter::ClearFreeMemory()

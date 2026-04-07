@@ -20,6 +20,9 @@ public:
 
 	virtual FBoxSphereBounds GetWorldBounds() const override;
 
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 private:
 	FVector WorldOffset = FVector(0.0f, 0.0f, 0.3f);
 };

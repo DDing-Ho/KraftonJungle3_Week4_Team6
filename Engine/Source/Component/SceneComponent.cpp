@@ -98,6 +98,34 @@ void USceneComponent::Serialize(FArchive& Ar)
 	}
 }
 
+void USceneComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UActorComponent::CopyPropertiesFrom(Source);
+
+	const USceneComponent* SourceComp = static_cast<const USceneComponent*>(Source);
+
+	this->RelativeTransform = SourceComp->RelativeTransform;
+	this->bWorldTransformDirty = true;
+
+	this->AttachParent = SourceComp->AttachParent;
+	this->AttachChildren = SourceComp->AttachChildren;
+}
+
+void USceneComponent::FixupReferences(const FDuplicateionContext& Context)
+{
+	UActorComponent::FixupReferences(Context);
+
+	if (this->AttachParent)
+	{
+		this->AttachParent = static_cast<USceneComponent*>(Context.GetMappedObject(this->AttachParent));
+	}
+
+	for (int32 i = 0; i < AttachChildren.size(); i++)
+	{
+		this->AttachChildren[i] = static_cast<USceneComponent*>(Context.GetMappedObject(this->AttachChildren[i]));
+	}
+}
+
 FVector USceneComponent::GetWorldLocation() const
 {
 	return GetWorldTransform().GetTranslation();

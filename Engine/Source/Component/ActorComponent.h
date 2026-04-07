@@ -25,6 +25,11 @@ public:
 
 	virtual void Serialize(FArchive& Ar);
 
+	void FixupReferences(const FDuplicateionContext& Context) override;
+
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 protected:
 	TObjectPtr<AActor> Owner;
 	bool bRegistered = false;

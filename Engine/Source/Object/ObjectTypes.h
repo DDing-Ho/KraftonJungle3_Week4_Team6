@@ -1,5 +1,6 @@
 #pragma once
 #include "Types/CoreTypes.h"
+#include "CoreMinimal.h"
 
 enum class EObjectFlags : uint32
 {
@@ -39,3 +40,18 @@ inline EObjectFlags operator~(EObjectFlags A)
 {
     return static_cast<EObjectFlags>(~static_cast<uint32>(A));
 }
+
+class UObject;
+
+// 복제 작업 상태와 원본, 복사본 매핑 정보를 들고 다니는 컨텍스트
+struct ENGINE_API FDuplicateionContext
+{
+	TMap<UObject*, UObject*> DuplicatedObjects;
+
+	UObject* GetMappedObject(UObject* Source) const
+	{
+		if (!Source) return nullptr;
+		auto It = DuplicatedObjects.find(Source);
+		return (It != DuplicatedObjects.end()) ? It->second : Source;
+	}
+};

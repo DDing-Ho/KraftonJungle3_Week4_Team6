@@ -7,20 +7,20 @@
 #include "Component/SceneComponent.h"
 #include "Debug/EngineLog.h"
 #include "Serializer/Archive.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 IMPLEMENT_RTTI(AActor, UObject)
 
 namespace {
 	FVector GZeroVector{};
 }
 
-UScene* AActor::GetScene() const { return Scene; }
-void AActor::SetScene(UScene* InScene) { Scene = InScene; }
+ULevel* AActor::GetLevel() const { return Level; }
+void AActor::SetLevel(ULevel* InLevel) { Level = InLevel; }
 UWorld* AActor::GetWorld() const
 {
-	if (Scene)
+	if (Level)
 	{
-		return Scene->GetTypedOuter<UWorld>();
+		return Level->GetTypedOuter<UWorld>();
 	}
 	return nullptr;
 }
@@ -31,10 +31,18 @@ void AActor::SetRootComponent(USceneComponent* InRootComponent)
 	// 의문점
 	// 기존에 RootComponent가 있을 시에는 RootComponent의 OwnerActor를 지워주나?
 	// 이러면 두 개의 RootComponent가 하나의 Owner을 가지고 있는건데.
-	RootComponent = InRootComponent;
 	if (RootComponent)
 	{
-		RootComponent->SetOwner(this);
+		RemoveOwnedComponent(RootComponent);
+	}
+
+	RootComponent = InRootComponent;
+
+	// 2. 새 루트가 들어왔다면, OwnedComponents 배열에 확실하게 등록!
+	if (RootComponent)
+	{
+		AddOwnedComponent(RootComponent);
+		// AddOwnedComponent 안에서 SetOwner(this)도 해주고 배열에도 넣어주니 일석이조!
 	}
 }
 
@@ -289,8 +297,8 @@ void AActor::Serialize(FArchive& Ar)
 			{
 				if (Comp != RootComponent && Comp->IsA(USceneComponent::StaticClass()))
 				{
-					USceneComponent* SceneComp = static_cast<USceneComponent*>(Comp);
-					SceneComp->AttachTo(RootComponent);
+					USceneComponent* LevelComp = static_cast<USceneComponent*>(Comp);
+					LevelComp->AttachTo(RootComponent);
 				}
 			}
 		}
@@ -314,4 +322,44 @@ void AActor::SetActorLocation(const FVector& InLocation)
 	}
 
 	RootComponent->SetRelativeLocation(InLocation);
+}
+
+void AActor::FixupReferences(const FDuplicateionContext& Context)
+{
+	UObject::FixupReferences(Context);
+
+	if (RootComponent)
+	{
+		RootComponent = static_cast<USceneComponent*>(Context.GetMappedObject(RootComponent));
+	}
+}
+
+void AActor::CopyPropertiesFrom(const UObject* Source)
+{
+	UObject::CopyPropertiesFrom(Source);
+	const AActor* SourceActor = static_cast<const AActor*>(Source);
+
+	this->bCanEverTick = SourceActor->bCanEverTick;
+	this->bTickEnabled = SourceActor->bTickEnabled;
+	this->bVisible = SourceActor->bVisible;
+
+	this->RootComponent = SourceActor->RootComponent;
+	this->OwnedComponents = SourceActor->OwnedComponents;
+}
+
+void AActor::DuplicateSubObjects(FDuplicateionContext& Context)
+{
+	UObject::DuplicateSubObjects(Context);
+
+	TArray<UActorComponent*> OldComponents = this->OwnedComponents;
+	this->OwnedComponents.clear();
+
+	for (UActorComponent* OldComp : OldComponents)
+	{
+		if (OldComp)
+		{
+			UActorComponent* NewComp = static_cast<UActorComponent*>(OldComp->Duplicate(Context, this));
+			this->AddOwnedComponent(NewComp);
+		}
+	}
 }

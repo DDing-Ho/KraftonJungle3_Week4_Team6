@@ -58,7 +58,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <memory>
 
-struct aiScene;
+struct aiLevel;
 struct aiImporterDesc;
 
 namespace Assimp {
@@ -135,7 +135,7 @@ public:
      * in InternReadFile(), this function will catch it and transform it into
      *  a suitable response to the caller.
      */
-    aiScene *ReadFile(
+    aiLevel *ReadFile(
             Importer *pImp,
             const std::string &pFile,
             IOSystem *pIOHandler);
@@ -308,7 +308,7 @@ public:
             TextFileMode mode = FORBID_EMPTY);
 
     // -------------------------------------------------------------------
-    /** Utility function to move a std::vector into a aiScene array
+    /** Utility function to move a std::vector into a aiLevel array
     *  @param vec The vector to be moved
     *  @param out The output pointer to the allocated array.
     *  @param numOut The output count of elements copied. */
@@ -325,7 +325,7 @@ public:
     }
 
     // -------------------------------------------------------------------
-    /** Utility function to move a std::vector of unique_ptrs into a aiScene array
+    /** Utility function to move a std::vector of unique_ptrs into a aiLevel array
     *  @param vec The vector of unique_ptrs to be moved
     *  @param out The output pointer to the allocated array.
     *  @param numOut The output count of elements copied. */
@@ -347,13 +347,13 @@ protected:
     double fileScale = 1.0;
 
     // -------------------------------------------------------------------
-    /** Imports the given file into the given scene structure. The
+    /** Imports the given file into the given Level structure. The
      * function is expected to throw an ImportErrorException if there is
-     * an error. If it terminates normally, the data in aiScene is
+     * an error. If it terminates normally, the data in aiLevel is
      * expected to be correct. Override this function to implement the
      * actual importing.
      * <br>
-     *  The output scene must meet the following requirements:<br>
+     *  The output Level must meet the following requirements:<br>
      * <ul>
      * <li>At least a root node must be there, even if its only purpose
      *     is to reference one mesh.</li>
@@ -378,7 +378,7 @@ protected:
      *   or AI_DEFAULT_TEXTURED_MATERIAL_NAME if they define a (dummy)
      *   texture. </li>
      * </ul>
-     * If the AI_SCENE_FLAGS_INCOMPLETE-Flag is <b>not</b> set:<ul>
+     * If the AI_Level_FLAGS_INCOMPLETE-Flag is <b>not</b> set:<ul>
      * <li> at least one mesh must be there</li>
      * <li> there may be no meshes with 0 vertices or faces</li>
      * </ul>
@@ -386,13 +386,13 @@ protected:
      * crash if one of the conditions is not met!
      *
      * @param pFile Path of the file to be imported.
-     * @param pScene The scene object to hold the imported data.
+     * @param pLevel The Level object to hold the imported data.
      * nullptr is not a valid parameter.
      * @param pIOHandler The IO handler to use for any file access.
      * nullptr is not a valid parameter. */
     virtual void InternReadFile(
             const std::string &pFile,
-            aiScene *pScene,
+            aiLevel *pLevel,
             IOSystem *pIOHandler) = 0;
 
 private:

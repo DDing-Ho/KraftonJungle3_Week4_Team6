@@ -9,7 +9,7 @@
 
 class FEngine;
 class FRenderer;
-class UScene;
+class ULevel;
 class FFrustum;
 class UPrimitiveComponent;
 struct FRenderCommandQueue;
@@ -29,11 +29,11 @@ public:
 	/** 윈도우 메시지를 직접 다루고 싶을 때 사용하는 후킹 지점이다. */
 	virtual void HandleMessage(FEngine* Engine, HWND Hwnd, UINT Msg, WPARAM WParam, LPARAM LParam);
 	/** 이 뷰포트가 어떤 씬을 바라볼지 결정한다. 기본값은 엔진의 활성 씬이다. */
-	virtual UScene* ResolveScene(FEngine* Engine) const;
+	virtual ULevel* ResolveLevel(FEngine* Engine) const;
 	/** 이 뷰포트가 어떤 월드를 조작할지 결정한다. 기본값은 엔진의 활성 월드다. */
 	virtual UWorld* ResolveWorld(FEngine* Engine) const;
 	/** 프러스텀 컬링과 수집기를 이용해 실제 렌더 큐에 커맨드를 채운다. */
-	virtual void BuildRenderCommands(FEngine* Engine, UScene* Scene,
+	virtual void BuildRenderCommands(FEngine* Engine, ULevel* Level,
 		const FFrustum& Frustum, const FShowFlags& Flags, const FVector& CameraPosition, FRenderCommandQueue& OutQueue);
 	/** 에셋 브라우저와의 상호작용을 위해 파일 더블클릭을 뷰포트가 직접 처리할 수 있게 열어둔 훅이다. */
 	virtual void HandleFileDoubleClick(const FString& FilePath);
@@ -44,16 +44,5 @@ public:
 
 protected:
 	/** 액터 목록을 순회하며 실제 드로우 커맨드로 바꾸는 공용 수집기다. */
-	FSceneRenderCollector RenderCollector;
-};
-
-class ENGINE_API FGameViewportClient : public IViewportClient
-{
-public:
-	/** 게임 뷰포트에 필요한 렌더러 콜백을 연결한다. */
-	void Attach(FEngine* Engine, FRenderer* Renderer) override;
-	/** 게임 뷰포트가 사용하던 렌더러 콜백을 해제한다. */
-	void Detach(FEngine* Engine, FRenderer* Renderer) override;
-	/** 활성 게임 월드를 기준으로 기본 렌더 패스를 실행한다. */
-	void Render(FEngine* Engine, FRenderer* Renderer) override;
+	FLevelRenderCollector RenderCollector;
 };

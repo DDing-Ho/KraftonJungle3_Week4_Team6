@@ -7,7 +7,7 @@
 #include "Core/Paths.h"
 #include "Actor/Actor.h"
 #include "Component/PrimitiveComponent.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Object/ObjectFactory.h" 
 #include "Serializer/Archive.h"
 #include "Object/Class.h"
@@ -15,7 +15,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <fstream>
-void FSceneSerializer::Save(UScene* Scene, const FString& FilePath, const FCameraSerializeData& CameraData)
+void FSceneSerializer::Save(ULevel* Level, const FString& FilePath, const FCameraSerializeData& CameraData)
 {
 	nlohmann::json Json;
 	if (CameraData.bValid)
@@ -53,7 +53,7 @@ void FSceneSerializer::Save(UScene* Scene, const FString& FilePath, const FCamer
 	// Primitives
 	nlohmann::json Primitives;
 	int32 Index = 0;
-	for (AActor* Actor : Scene->GetActors())
+	for (AActor* Actor : Level->GetActors())
 	{
 		if (!Actor || Actor->IsPendingDestroy())
 			continue;
@@ -76,7 +76,7 @@ void FSceneSerializer::Save(UScene* Scene, const FString& FilePath, const FCamer
 	}
 }
 
-bool FSceneSerializer::Load(UScene* Scene, const FString& FilePath, ID3D11Device* Device,
+bool FSceneSerializer::Load(ULevel* Level, const FString& FilePath, ID3D11Device* Device,
                             FCameraSerializeData* OutCameraData)
 {
 	std::ifstream File(FPaths::ToPath(FilePath));
@@ -132,14 +132,14 @@ bool FSceneSerializer::Load(UScene* Scene, const FString& FilePath, ID3D11Device
 			continue;
 		}
 		const FString ActorName = ClassName + "_" + std::to_string(ActorIndex);
-		AActor* Actor = static_cast<AActor*>(FObjectFactory::ConstructObject(ActorClass, Scene, ActorName));
+		AActor* Actor = static_cast<AActor*>(FObjectFactory::ConstructObject(ActorClass, Level, ActorName));
 		if (!Actor)
 		{
 			ActorIndex++;
 			continue;
 		}
 
-		Scene->RegisterActor(Actor);
+		Level->RegisterActor(Actor);
 		Actor->PostSpawnInitialize();
 		FArchive Ar(false);// loading
 		*static_cast<nlohmann::json*>(Ar.GetRawJson()) = Value;

@@ -26,6 +26,10 @@ public:
 	void SetFov(float inFov);
 	void SetSpeed(float Inspeed);
 	void SetSensitivity(float InSetSensitivity);
+
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 private:
 	FCamera* Camera = nullptr;
 };

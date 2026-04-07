@@ -125,7 +125,7 @@ extern "C" {
  * *different* primitive types mixed up (e.g. lines and triangles) in several
  * 'clean' sub-meshes. Furthermore there is a configuration option (
  * #AI_CONFIG_PP_SBP_REMOVE) to force #aiProcess_SortByPType to remove
- * specific kinds of primitives from the imported scene, completely and forever.
+ * specific kinds of primitives from the imported Level, completely and forever.
  * In many cases you'll probably want to set this setting to
  * @code
  * aiPrimitiveType_LINE|aiPrimitiveType_POINT
@@ -282,7 +282,7 @@ struct aiBone {
     C_STRUCT aiNode *mArmature;
 
     /**
-     * The bone node in the scene - used for skeleton conversion
+     * The bone node in the Level - used for skeleton conversion
      * you must enable aiProcess_PopulateArmatureData to populate this
      */
     C_STRUCT aiNode *mNode;
@@ -630,9 +630,9 @@ enum aiMorphingMethod {
  *
  * A Mesh uses only a single material which is referenced by a material ID.
  * @note The mPositions member is usually not optional. However, vertex positions
- * *could* be missing if the #AI_SCENE_FLAGS_INCOMPLETE flag is set in
+ * *could* be missing if the #AI_Level_FLAGS_INCOMPLETE flag is set in
  * @code
- * aiScene::mFlags
+ * aiLevel::mFlags
  * @endcode
  */
 struct aiMesh {
@@ -751,7 +751,7 @@ struct aiMesh {
      *
      * Each face refers to a number of vertices by their indices.
      * This array is always present in a mesh, its size is given
-     *  in mNumFaces. If the #AI_SCENE_FLAGS_NON_VERBOSE_FORMAT
+     *  in mNumFaces. If the #AI_Level_FLAGS_NON_VERBOSE_FORMAT
      * is NOT set each face references an unique set of vertices.
      */
     C_STRUCT aiFace *mFaces;
@@ -774,7 +774,7 @@ struct aiMesh {
      *
      * A mesh uses only a single material. If an imported model uses
      * multiple materials, the import splits up the mesh. Use this value
-     * as index into the scene's material list.
+     * as index into the Level's material list.
      */
     unsigned int mMaterialIndex;
 
@@ -898,13 +898,13 @@ struct aiMesh {
     }
 
     //! @brief Check whether the mesh contains positions. Provided no special
-    //!        scene flags are set, this will always be true
+    //!        Level flags are set, this will always be true
     //! @return true, if positions are stored, false if not.
     bool HasPositions() const {
         return mVertices != nullptr && mNumVertices > 0;
     }
 
-    //! @brief Check whether the mesh contains faces. If no special scene flags
+    //! @brief Check whether the mesh contains faces. If no special Level flags
     //!        are set this should always return true
     //! @return true, if faces are stored, false if not.
     bool HasFaces() const {
@@ -1055,7 +1055,7 @@ struct aiSkeletonBone {
     /// you must enable aiProcess_PopulateArmatureData to populate this
     C_STRUCT aiNode *mArmature;
 
-    /// @brief The bone node in the scene - used for skeleton conversion
+    /// @brief The bone node in the Level - used for skeleton conversion
     /// you must enable aiProcess_PopulateArmatureData to populate this
     C_STRUCT aiNode *mNode;
 

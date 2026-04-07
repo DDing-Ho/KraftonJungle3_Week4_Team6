@@ -8,7 +8,7 @@ class AActor;
 class FFrustum;
 struct FRenderCommandQueue;
 class UPrimitiveComponent;
-class ENGINE_API FSceneRenderCollector
+class ENGINE_API FLevelRenderCollector
 {
 public:
 	void CollectRenderCommands(const TArray<AActor*>& Actors, const FFrustum& Frustum,

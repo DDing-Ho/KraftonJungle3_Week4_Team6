@@ -81,7 +81,7 @@ enum aiLightSourceType {
 
     //! The generic light level of the world, including the bounces
     //! of all other light sources.
-    //! Typically, there's at most one ambient light in a scene.
+    //! Typically, there's at most one ambient light in a Level.
     //! This light type doesn't have a valid position, direction, or
     //! other properties, just a color.
     aiLightSource_AMBIENT       = 0x4,
@@ -115,8 +115,8 @@ enum aiLightSourceType {
 struct aiLight {
     /** The name of the light source.
      *
-     *  There must be a node in the scene-graph with the same name.
-     *  This node specifies the position of the light in the scene
+     *  There must be a node in the Level-graph with the same name.
+     *  This node specifies the position of the light in the Level
      *  hierarchy and can be animated.
      */
     C_STRUCT aiString mName;

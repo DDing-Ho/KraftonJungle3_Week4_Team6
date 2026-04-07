@@ -36,6 +36,9 @@ public:
 	virtual FRenderMesh* GetRenderMesh() const { return nullptr; }
 
 protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
+protected:
 	FBoxSphereBounds Bounds;
 	bool bDrawDebugBounds = true;
 };

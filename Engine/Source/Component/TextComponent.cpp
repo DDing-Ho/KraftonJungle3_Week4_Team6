@@ -55,6 +55,21 @@ void UTextComponent::Serialize(FArchive& Ar)
 	}
 }
 
+void UTextComponent::CopyPropertiesFrom(const UObject* Source)
+{
+	UPrimitiveComponent::CopyPropertiesFrom(Source);
+	const UTextComponent* SourceComp = static_cast<const UTextComponent*>(Source);
+
+	this->Text = SourceComp->Text;
+	this->TextColor = SourceComp->TextColor;
+	this->TextScale = SourceComp->TextScale;
+	this->bBillboard = SourceComp->bBillboard;
+
+	this->TextMesh = SourceComp->TextMesh;
+
+	this->bTextMeshDirty = SourceComp->bTextMeshDirty;
+}
+
 FBoxSphereBounds UTextComponent::GetWorldBounds() const
 {
 	const FVector Center = GetRenderWorldPosition();

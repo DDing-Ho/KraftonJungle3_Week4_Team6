@@ -22,6 +22,9 @@ public:
 	FBoxSphereBounds CalcBounds(const FMatrix& LocalToWorld) const override;
 	FBoxSphereBounds GetLocalBounds() const override;
 
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 private:
 	UStaticMesh* StaticMesh = nullptr;
 };

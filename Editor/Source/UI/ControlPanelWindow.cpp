@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "EditorEngine.h"
 #include "Renderer/Renderer.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Actor/Actor.h"
 #include "Component/TextComponent.h"
 #include "Component/SkyComponent.h"
@@ -66,50 +66,50 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 		return;
 	}
 
-	if (Engine && Engine->GetScene())
+	if (Engine && Engine->GetLevel())
 	{
 	
-		const FWorldContext* ActiveSceneContext = Engine->GetActiveWorldContext();
-		const TArray<FWorldContext*>& PreviewSceneContexts = Engine->GetPreviewWorldContexts();
-		const bool bPreviewActive = ActiveSceneContext && ActiveSceneContext->WorldType == EWorldType::Preview;
+		const FWorldContext* ActiveLevelContext = Engine->GetActiveWorldContext();
+		const TArray<FWorldContext*>& PreviewLevelContexts = Engine->GetPreviewWorldContexts();
+		const bool bPreviewActive = ActiveLevelContext && ActiveLevelContext->WorldType == EWorldType::Preview;
 
 		/*
-			PreviewScene 등 아마 확장의 여지를 둔 것으로 보이나 아무 기능도 없어 주석 처리함		
+			PreviewLevel 등 아마 확장의 여지를 둔 것으로 보이나 아무 기능도 없어 주석 처리함		
 		*/
 		/*
 		ImGui::SeparatorText("World");
 
-		if (ActiveSceneContext)
+		if (ActiveLevelContext)
 		{
-			ImGui::Text("Active: %s", ActiveSceneContext->ContextName.c_str());
-			ImGui::Text("Type: %s", GetWorldTypeLabel(ActiveSceneContext->WorldType));
+			ImGui::Text("Active: %s", ActiveLevelContext->ContextName.c_str());
+			ImGui::Text("Type: %s", GetWorldTypeLabel(ActiveLevelContext->WorldType));
 		}
 		*/
 
 		/*
-		if (ImGui::Button("Editor Scene"))
+		if (ImGui::Button("Editor Level"))
 		{
-			Core->ActivateEditorScene();
+			Core->ActivateEditorLevel();
 		}
 		*/
 
 		/*
 		ImGui::SameLine();
 
-		if (PreviewSceneContexts.empty())
+		if (PreviewLevelContexts.empty())
 		{
 			ImGui::BeginDisabled();
-			ImGui::Button("Preview Scene");
+			ImGui::Button("Preview Level");
 			ImGui::EndDisabled();
 		}
-		else if (ImGui::Button("Preview Scene"))
+		else if (ImGui::Button("Preview Level"))
 		{
-			Core->ActivatePreviewScene(PreviewSceneContexts.front()->ContextName);
+			Core->ActivatePreviewLevel(PreviewLevelContexts.front()->ContextName);
 		}
 
 		if (bPreviewActive)
 		{
-			ImGui::TextUnformatted("Preview scene is editor-only. Scene save/load is disabled.");
+			ImGui::TextUnformatted("Preview Level is editor-only. Level save/load is disabled.");
 		}
 		*/
 
@@ -119,7 +119,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 		/*
 		if (ImGui::Button("Spawn Test"))
 		{
-			UScene* Scene = Core->GetScene();
+			ULevel* Level = Core->GetLevel();
 			AActor* NewActor = nullptr;
 
 			for (int i = 0; i < 1000; i++)
@@ -132,7 +132,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 				std::uniform_real_distribution<float> dist(-10, 10);
 
 				FVector V{ 0, 0, 0 };
-				NewActor = Scene->SpawnActor<ACubeActor>("Test");
+				NewActor = Level->SpawnActor<ACubeActor>("Test");
 				NewActor->SetActorLocation(V);
 			}
 		}
@@ -146,7 +146,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 			Entry = &ViewportRegistry.GetEntries().front();
 
 		// Speed/Sensitivity는 FCamera에서 읽기 (렌더 무관 설정값)
-		if (FCamera* Camera = Engine->GetScene()->GetCamera())
+		if (FCamera* Camera = Engine->GetLevel()->GetCamera())
 		{
 			float Sensitivity = Camera->GetMouseSensitivity();
 			if (ImGui::SliderFloat("Mouse Sensitivity", &Sensitivity, 0.01f, 1.0f))
@@ -206,7 +206,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 
 		if (ImGui::Button("Spawn"))
 		{
-			UScene* Scene = Engine->GetScene();
+			ULevel* Level = Engine->GetLevel();
 			static int32 SpawnCount = 0;
 			const FString Name = FString(SpawnTypes[SpawnTypeIndex]) + "_Spawned_" + std::to_string(SpawnCount++);
 
@@ -215,24 +215,24 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 			// ─── 1. 특수 액터 (미리 조립된 테스트용 액터) ───
 			if (SpawnTypeIndex == 0)
 			{
-				NewActor = Scene->SpawnActor<ACubeActor>(Name);
+				NewActor = Level->SpawnActor<ACubeActor>(Name);
 			}
 			else if (SpawnTypeIndex == 1)
 			{
-				NewActor = Scene->SpawnActor<ASphereActor>(Name);
+				NewActor = Level->SpawnActor<ASphereActor>(Name);
 			}
 			else if (SpawnTypeIndex == 2)
 			{
-				NewActor = Scene->SpawnActor<APlaneActor>(Name);
+				NewActor = Level->SpawnActor<APlaneActor>(Name);
 			}
 			// ─── 2. 순수 컴포넌트 조립 방식 (대통합!) ───
 			else if (SpawnTypeIndex == 3)
 			{
-				NewActor = Scene->SpawnActor<ASubUVActor>(Name);
+				NewActor = Level->SpawnActor<ASubUVActor>(Name);
 			}
 			else if (SpawnTypeIndex == 4)
 			{
-				NewActor = Scene->SpawnActor<ATextActor>(Name);
+				NewActor = Level->SpawnActor<ATextActor>(Name);
 
 				if (NewActor)
 				{
@@ -246,11 +246,11 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 			}
 			else if (SpawnTypeIndex == 5)
 			{
-				NewActor = Scene->SpawnActor<ASkySphereActor>(Name);
+				NewActor = Level->SpawnActor<ASkySphereActor>(Name);
 			}
 			else
 			{
-				NewActor = Scene->SpawnActor<AActor>(Name);
+				NewActor = Level->SpawnActor<AActor>(Name);
 				if (NewActor)
 				{
 					UStaticMeshComponent* MeshComp = FObjectFactory::ConstructObject<UStaticMeshComponent>(nullptr, "StaticMeshComponent");
@@ -294,7 +294,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 		if (ImGui::Button("Delete"))
 		{
 			const FString Name = SelectedActor->GetName();
-			Engine->GetScene()->DestroyActor(SelectedActor);
+			Engine->GetLevel()->DestroyActor(SelectedActor);
 			Engine->SetSelectedActor(nullptr);
 			UE_LOG("Deleted actor: %s", Name.c_str());
 		}

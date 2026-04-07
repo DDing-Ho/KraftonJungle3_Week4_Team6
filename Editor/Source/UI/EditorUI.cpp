@@ -2,7 +2,7 @@
 
 #include "EditorEngine.h"
 #include "Object/Object.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Actor/Actor.h"
 #include "Component/PrimitiveComponent.h"
 #include "Component/SceneComponent.h"
@@ -43,7 +43,7 @@ std::string GetFilePathUsingDialog(EFileDialogType Type)
 
 	OPENFILENAMEW Ofn = {};
 	Ofn.lStructSize = sizeof(OPENFILENAMEW);
-	Ofn.lpstrFilter = L"Scene Files (*.json)\0*.json\0All Files (*.*)\0*.*\0";
+	Ofn.lpstrFilter = L"Level Files (*.json)\0*.json\0All Files (*.*)\0*.*\0";
 	Ofn.lpstrFile = FileName;
 	Ofn.nMaxFile = MAX_PATH;
 	Ofn.lpstrDefExt = L"json";
@@ -348,7 +348,7 @@ void FEditorUI::DetachFromRenderer(FRenderer* InRenderer)
 
 	if (InRenderer)
 	{
-		InRenderer->ClearSceneRenderTarget();
+		InRenderer->ClearLevelRenderTarget();
 		InRenderer->ClearViewportCallbacks();
 	}
 }
@@ -677,7 +677,7 @@ void FEditorUI::Render()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("New Scene"))
+			if (ImGui::MenuItem("New Level"))
 			{
 				if (Engine)
 				{
@@ -688,24 +688,24 @@ void FEditorUI::Render()
 						Cam->GetCamera()->SetPosition({ -5.0f, 0.0f, 2.0f });
 						Cam->GetCamera()->SetRotation(0.f, 0.f);
 					}
-					Engine->GetScene()->ClearActors();
-					UE_LOG("New scene created");
+					Engine->GetLevel()->ClearActors();
+					UE_LOG("New Level created");
 				}
 			}
 
-			if (ImGui::MenuItem("Open Scene"))
+			if (ImGui::MenuItem("Open Level"))
 			{
-				if (Engine && Engine->GetActiveScene())
+				if (Engine && Engine->GetActiveLevel())
 				{
 					FString Path = GetFilePathUsingDialog(EFileDialogType::Open);
 
 					if (!Path.empty())
 					{
 						Engine->SetSelectedActor(nullptr);
-						Engine->GetScene()->ClearActors();
+						Engine->GetLevel()->ClearActors();
 
 						FCameraSerializeData CameraData;
-						bool bLoaded = FSceneSerializer::Load(Engine->GetScene(), Path,
+						bool bLoaded = FSceneSerializer::Load(Engine->GetLevel(), Path,
 						                                      Engine->GetRenderer()->GetDevice(), &CameraData);
 						if (bLoaded)
 						{
@@ -740,13 +740,13 @@ void FEditorUI::Render()
 									PerspEntry->LocalState.FarPlane  = CameraData.FarClip;
 								}
 							}
-							UE_LOG("Scene loaded: %s", Path.c_str());
+							UE_LOG("Level loaded: %s", Path.c_str());
 						}
 						else
 						{
 							MessageBoxW(
 								nullptr,
-								L"Scene 정보가 잘못되었습니다.",
+								L"Level 정보가 잘못되었습니다.",
 								L"Error",
 								MB_OK | MB_ICONWARNING
 							);
@@ -755,9 +755,9 @@ void FEditorUI::Render()
 				}
 			}
 
-			if (ImGui::MenuItem("Save Scene As..."))
+			if (ImGui::MenuItem("Save Level As..."))
 			{
-				if (Engine && Engine->GetActiveScene())
+				if (Engine && Engine->GetActiveLevel())
 				{
 					FString Path = GetFilePathUsingDialog(EFileDialogType::Save);
 
@@ -793,7 +793,7 @@ void FEditorUI::Render()
 							CameraData.FarClip   = PerspEntry->LocalState.FarPlane;
 							CameraData.bValid    = true;
 						}
-						FSceneSerializer::Save(Engine->GetScene(), Path, CameraData);
+						FSceneSerializer::Save(Engine->GetLevel(), Path, CameraData);
 					}
 				}
 			}
@@ -878,6 +878,35 @@ void FEditorUI::Render()
 			}
 			ImGui::EndMenu();
 		}
+
+		// PIE Play/Stop Button
+		if (Engine)
+		{
+			bool bIsPlaying = Engine->IsPlayingInEditor();
+			const char* ButtonLabel = bIsPlaying ? "Stop" : "Play";
+			ImVec4 ButtonColor = bIsPlaying ? ImVec4(0.8f, 0.2f, 0.2f, 1.0f) : ImVec4(0.2f, 0.7f, 0.2f, 1.0f);
+			ImVec4 ButtonHoverColor = bIsPlaying ? ImVec4(1.0f, 0.3f, 0.3f, 1.0f) : ImVec4(0.3f, 0.9f, 0.3f, 1.0f);
+
+			float MenuBarWidth = ImGui::GetWindowWidth();
+			float ButtonWidth = 60.0f;
+			ImGui::SetCursorPosX((MenuBarWidth - ButtonWidth) * 0.5f);
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ButtonColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ButtonHoverColor);
+			if (ImGui::Button(ButtonLabel, ImVec2(ButtonWidth, 0)))
+			{
+				if (bIsPlaying)
+				{
+					Engine->EndPIE();
+				}
+				else
+				{
+					Engine->StartPIE();
+				}
+			}
+			ImGui::PopStyleColor(2);
+		}
+
 		ImGui::EndMainMenuBar();
 	}
 

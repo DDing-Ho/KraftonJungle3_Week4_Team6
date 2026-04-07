@@ -15,5 +15,8 @@ public:
 	void Serialize(FArchive& Ar) override;
 
 protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
+protected:
 	TArray<std::shared_ptr<FMaterial>> Materials;
 };

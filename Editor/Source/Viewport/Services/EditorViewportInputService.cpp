@@ -10,7 +10,7 @@
 #include "imgui.h"
 #include "Input/InputManager.h"
 #include "Picking/Picker.h"
-#include "Scene/Scene.h"
+#include "Scene/Level.h"
 #include "Slate/SlateApplication.h"
 #include "Viewport/Viewport.h"
 
@@ -58,7 +58,7 @@ void FEditorViewportInputService::TickCameraNavigation(
 	if (FocusedEntry->LocalState.ProjectionType == EViewportType::Perspective)
 	{
 		float Sensitivity = 0.2f;
-		if (FCamera* Cam = Engine->GetScene()->GetCamera())
+		if (FCamera* Cam = Engine->GetLevel()->GetCamera())
 		{
 			Sensitivity = Cam->GetMouseSensitivity();
 		}
@@ -203,9 +203,9 @@ void FEditorViewportInputService::HandleMessage(
 		return;
 	}
 
-	UScene* Scene = Engine->GetScene();
+	ULevel* Level = Engine->GetLevel();
 	AActor* SelectedActor = EditorEngine->GetSelectedActor();
-	if (!Scene)
+	if (!Level)
 	{
 		return;
 	}
@@ -262,7 +262,7 @@ void FEditorViewportInputService::HandleMessage(
 			return;
 		}
 
-		AActor* PickedActor = Picker.PickActor(Scene, Entry, ScreenMouseX, ScreenMouseY);
+		AActor* PickedActor = Picker.PickActor(Level, Entry, ScreenMouseX, ScreenMouseY);
 		EditorEngine->SetSelectedActor(PickedActor);
 		if (OnSelectionChanged)
 		{

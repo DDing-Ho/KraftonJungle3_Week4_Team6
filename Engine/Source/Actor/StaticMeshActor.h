@@ -12,6 +12,11 @@ public:
 
 	virtual void PostSpawnInitialize() override;
 
+	void FixupReferences(const FDuplicateionContext& Context) override;
+
+protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
 private:
 	UStaticMeshComponent* StaticMeshComp = nullptr;
 };

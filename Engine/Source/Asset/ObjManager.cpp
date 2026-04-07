@@ -520,7 +520,7 @@ namespace
 		RawData->UpdateLocalBound();
 
 		UStaticMesh* NewAsset = FObjectFactory::ConstructObject<UStaticMesh>(nullptr, JustFileName);
-		NewAsset->SetStaticMeshAsset(RawData.release());
+		NewAsset->SetStaticMeshAsset(std::move(RawData));
 
 		NewAsset->LocalBounds.Radius = NewAsset->GetRenderData()->GetLocalBoundRadius();
 		NewAsset->LocalBounds.Center = NewAsset->GetRenderData()->GetCenterCoord();
@@ -559,7 +559,7 @@ namespace
 		RawData->UpdateLocalBound();
 
 		UStaticMesh* NewAsset = FObjectFactory::ConstructObject<UStaticMesh>(nullptr, JustFileName);
-		NewAsset->SetStaticMeshAsset(RawData.release());
+		NewAsset->SetStaticMeshAsset(std::move(RawData));
 
 		NewAsset->LocalBounds.Radius = NewAsset->GetRenderData()->GetLocalBoundRadius();
 		NewAsset->LocalBounds.Center = NewAsset->GetRenderData()->GetCenterCoord();

@@ -20,3 +20,21 @@ void APlaneActor::PostSpawnInitialize()
 
 	AActor::PostSpawnInitialize();
 }
+
+
+void APlaneActor::FixupReferences(const FDuplicateionContext& Context)
+{
+	AActor::FixupReferences(Context);
+	if (this->PlaneMeshComponent)
+	{
+		this->PlaneMeshComponent = static_cast<UStaticMeshComponent*>(Context.GetMappedObject(this->PlaneMeshComponent));
+	}
+}
+
+void APlaneActor::CopyPropertiesFrom(const UObject* Source)
+{
+	AActor::CopyPropertiesFrom(Source);
+	const APlaneActor* SourceActor = static_cast<const APlaneActor*>(Source);
+
+	this->PlaneMeshComponent = SourceActor->PlaneMeshComponent;
+}

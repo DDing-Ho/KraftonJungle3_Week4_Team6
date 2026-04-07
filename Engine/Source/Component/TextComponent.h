@@ -42,6 +42,9 @@ public:
 	void Serialize(FArchive& Ar) override;
 
 protected:
+	void CopyPropertiesFrom(const UObject* Source) override;
+
+protected:
 	FString Text = "Text";
 	FVector4 TextColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	float TextScale = 1.0f;
