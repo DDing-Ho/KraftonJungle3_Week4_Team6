@@ -12,6 +12,7 @@
 #include "Renderer/SubUVRenderer.h"
 #include "Renderer/Material.h"
 #include "Renderer/MeshData.h"
+#include "Component/BillboardComponent.h"
 
 void FLevelRenderCollector::CollectRenderCommands(const TArray<AActor*>& Actors, const FFrustum& Frustum,
 	const FShowFlags& ShowFlags, const FVector& CameraPosition, FRenderCommandQueue& OutQueue)
@@ -165,6 +166,34 @@ void FLevelRenderCollector::CollectRenderCommands(const TArray<AActor*>& Actors,
 						Command.Material = MatPtr ? MatPtr.get() : Renderer->GetDefaultMaterial();
 						OutQueue.AddCommand(Command);
 					}
+				}
+			}
+			continue;
+		}
+
+		if (Comp->IsA(UBillboardComponent::StaticClass()))
+		{
+			UBillboardComponent* BillboardComp = static_cast<UBillboardComponent*>(Comp);
+			FRenderMesh* BillboardMesh = BillboardComp->GetBillboardMesh();
+
+			// SubUVRenderer 를 안 사용하는게 맞는데 우선 테스트 용으로 재사용
+			if (BillboardMesh && SubUVRenderer.BuildSubUVMesh(BillboardComp->GetSize(), *BillboardMesh))
+			{
+				BillboardMesh->bIsDirty = true;
+				FMaterial* BillboardMat = BillboardComp->GetMaterialInstance();
+				if (BillboardMat)
+				{
+					FRenderCommand Command;
+					Command.RenderMesh = BillboardMesh;
+					Command.Material = BillboardMat;
+					Command.WorldMatrix = BillboardComp->GetWorldTransform();
+					if (BillboardComp->IsBillboard())
+					{
+						const FVector WorldPos = Command.WorldMatrix.GetTranslation();
+						const FVector Scale = Command.WorldMatrix.GetScaleVector();
+						Command.WorldMatrix = FMatrix::MakeScale(Scale) * FMatrix::MakeBillboard(WorldPos, CameraPosition);
+					}
+					OutQueue.AddCommand(Command);
 				}
 			}
 			continue;

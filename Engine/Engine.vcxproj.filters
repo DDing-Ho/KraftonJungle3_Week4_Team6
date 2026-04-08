@@ -307,6 +307,12 @@
       <Filter>Source\World</Filter>
     </ClCompile>
     <ClCompile Include="Source\Core\GameViewportClient.cpp" />
+    <ClCompile Include="Source\Component\BillboardComponent.cpp">
+      <Filter>Source\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\BillboardActor.cpp">
+      <Filter>Source\Actor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CoreMinimal.h">
@@ -887,6 +893,12 @@
     </ClInclude>
     <ClInclude Include="Source\Core\GameViewportClient.h" />
     <ClInclude Include="Source\Component\TextRenderComponent.h" />
+    <ClInclude Include="Source\Component\BillboardComponent.h">
+      <Filter>Source\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Actor\BillboardActor.h">
+      <Filter>Source\Actor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

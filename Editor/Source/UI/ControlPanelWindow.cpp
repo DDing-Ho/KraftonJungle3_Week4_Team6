@@ -27,6 +27,7 @@
 #include "Actor/StaticMeshActor.h"
 #include "Actor/SubUVActor.h"
 #include "Actor/TextActor.h"
+#include "Actor/BillboardActor.h"
 #include "Math/MathUtility.h"
 #include "Asset/ObjManager.h"
 #include "Renderer/Material.h"
@@ -192,7 +193,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 		ImGui::SeparatorText("Spawn");
 
 		static int32 SpawnTypeIndex = 0;
-		const char* SpawnTypes[] = { "Cube", "Sphere", "Plane", "SubUV", "Text", "SkySphere", "Staticmesh" };
+		const char* SpawnTypes[] = { "Cube", "Sphere", "Plane", "SubUV", "Text", "SkySphere", "Staticmesh", "Billboard"};
 
 		ImGui::Combo("Type", &SpawnTypeIndex, SpawnTypes, IM_ARRAYSIZE(SpawnTypes));
 
@@ -248,8 +249,9 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 			{
 				NewActor = Level->SpawnActor<ASkySphereActor>(Name);
 			}
-			else
+			else if (SpawnTypeIndex == 6)
 			{
+
 				NewActor = Level->SpawnActor<AActor>(Name);
 				if (NewActor)
 				{
@@ -273,6 +275,10 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 					NewActor->AddOwnedComponent(MeshComp);
 					NewActor->SetRootComponent(MeshComp);
 				}
+			}
+			else
+			{
+				NewActor = Level->SpawnActor<ABillboardActor>(Name);
 			}
 
 			// ─── 마무리: 에디터 선택 및 로그 출력 ───

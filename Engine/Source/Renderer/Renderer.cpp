@@ -280,6 +280,7 @@ bool FRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
 			float White[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			DefaultMaterial->GetConstantBuffer(SlotIndex)->SetData(White, sizeof(White));
 		}
+
 		FMaterialManager::Get().Register("M_Default", DefaultMaterial);
 	}
 
@@ -289,7 +290,7 @@ bool FRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
 		std::wstring TexturePSPath = ShaderDirW + L"TexturePixelShader.hlsl";
 		auto PS = FShaderMap::Get().GetOrCreatePixelShader(Device, TexturePSPath.c_str());
 		DefaultTextureMaterial = std::make_shared<FMaterial>();
-		DefaultTextureMaterial->SetOriginName("M_Default");
+		DefaultTextureMaterial->SetOriginName("M_Default_Texture");
 		DefaultTextureMaterial->SetVertexShader(VS);
 		DefaultTextureMaterial->SetPixelShader(PS);
 
@@ -318,6 +319,18 @@ bool FRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
 			float DefaultScroll[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			DefaultTextureMaterial->GetConstantBuffer(SlotIndex)->SetData(DefaultScroll, sizeof(DefaultScroll), 16);
 		}
+
+		ID3D11ShaderResourceView* NewSRV = nullptr;
+		std::filesystem::path DefaultTexturePath = FPaths::ContentDir() / FString("Textures/SubUVDino.png");
+		if (!CreateTextureFromSTB(GetDevice(), DefaultTexturePath, &NewSRV))
+		{
+			return false;
+		}
+
+		auto MaterialTexture = std::make_shared<FMaterialTexture>();
+		MaterialTexture->TextureSRV = NewSRV;
+		DefaultTextureMaterial->SetMaterialTexture(MaterialTexture);
+
 		FMaterialManager::Get().Register("M_Default_Texture", DefaultTextureMaterial);
 	}
 
