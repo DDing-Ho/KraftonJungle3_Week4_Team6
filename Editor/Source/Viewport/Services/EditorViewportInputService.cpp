@@ -31,7 +31,11 @@ void FEditorViewportInputService::TickCameraNavigation(
 		return;
 	}
 
-	if (ImGui::GetCurrentContext())
+	bool bIsPlaying = EditorEngine->IsPlayingInEditor();
+	FInputManager* Input = Engine->GetInputManager();
+	bool bRightMouseDown = Input && Input->IsMouseButtonDown(FInputManager::MOUSE_RIGHT);
+
+	if (ImGui::GetCurrentContext() && !bIsPlaying && !bRightMouseDown)
 	{
 		const ImGuiIO& IO = ImGui::GetIO();
 		if (IO.WantCaptureKeyboard || IO.WantCaptureMouse)
@@ -40,8 +44,12 @@ void FEditorViewportInputService::TickCameraNavigation(
 		}
 	}
 
-	FInputManager* Input = Engine->GetInputManager();
-	if (!Input || !Input->IsMouseButtonDown(FInputManager::MOUSE_RIGHT) || Gizmo.IsDragging())
+	if (!Input || Gizmo.IsDragging())
+	{
+		return;
+	}
+
+	if (!bIsPlaying && !bRightMouseDown)
 	{
 		return;
 	}

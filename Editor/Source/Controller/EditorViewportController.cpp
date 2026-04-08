@@ -1,4 +1,5 @@
 #include "EditorViewportController.h"
+#include "Core/Engine.h"
 #include "Component/CameraComponent.h"
 #include "Input/InputManager.h"
 #include "Input/EnhancedInputManager.h"
@@ -73,7 +74,9 @@ void FEditorViewportController::SetupInputBindings()
 	EnhancedInput->BindAction(&MoveForwardAction, ETriggerEvent::Triggered,
 		[this](const FInputActionValue& Value) {
 		if (!ActiveLocalState) return;
-		if (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT))
+		const FWorldContext* Context = GEngine ? GEngine->GetActiveWorldContext() : nullptr;
+		bool bIsPlaying = Context && Context->WorldType == EWorldType::PIE;
+		if (bIsPlaying || (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT)))
 		{
 			const float Speed = CameraComponent ? CameraComponent->GetCamera()->GetSpeed() : 5.0f;
 			const FVector Forward = ActiveLocalState->Rotation.Vector().GetSafeNormal();
@@ -84,7 +87,9 @@ void FEditorViewportController::SetupInputBindings()
 	EnhancedInput->BindAction(&MoveRightAction, ETriggerEvent::Triggered,
 		[this](const FInputActionValue& Value) {
 		if (!ActiveLocalState) return;
-		if (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT))
+		const FWorldContext* Context = GEngine ? GEngine->GetActiveWorldContext() : nullptr;
+		bool bIsPlaying = Context && Context->WorldType == EWorldType::PIE;
+		if (bIsPlaying || (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT)))
 		{
 			const float Speed = CameraComponent ? CameraComponent->GetCamera()->GetSpeed() : 5.0f;
 			const FVector Forward = ActiveLocalState->Rotation.Vector().GetSafeNormal();
@@ -96,7 +101,9 @@ void FEditorViewportController::SetupInputBindings()
 	EnhancedInput->BindAction(&MoveUpAction, ETriggerEvent::Triggered,
 		[this](const FInputActionValue& Value) {
 		if (!ActiveLocalState) return;
-		if (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT))
+		const FWorldContext* Context = GEngine ? GEngine->GetActiveWorldContext() : nullptr;
+		bool bIsPlaying = Context && Context->WorldType == EWorldType::PIE;
+		if (bIsPlaying || (InputManager && InputManager->IsMouseButtonDown(FInputManager::MOUSE_RIGHT)))
 		{
 			const float Speed = CameraComponent ? CameraComponent->GetCamera()->GetSpeed() : 5.0f;
 			ActiveLocalState->Position += FVector(0.f, 0.f, 1.f) * (Value.Get() * Speed * CurrentDeltaTime);

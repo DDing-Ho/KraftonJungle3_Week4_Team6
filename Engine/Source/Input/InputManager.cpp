@@ -3,6 +3,7 @@
 
 void FInputManager::ProcessMessage(HWND Hwnd, UINT Msg, WPARAM WParam, LPARAM LParam)
 {
+	TargetHwnd = Hwnd;
 	switch (Msg)
 	{
 	case WM_KEYDOWN:
@@ -17,25 +18,31 @@ void FInputManager::ProcessMessage(HWND Hwnd, UINT Msg, WPARAM WParam, LPARAM LP
 
 	case WM_LBUTTONDOWN:
 		EventQueue.push_back({ EInputEventType::MouseButtonDown, MOUSE_LEFT });
-		SetCapture(Hwnd);
+		if (!bIsMouseCaptured) SetCapture(Hwnd);
 		break;
 
 	case WM_LBUTTONUP:
 		EventQueue.push_back({ EInputEventType::MouseButtonUp, MOUSE_LEFT });
-		ReleaseCapture();
+		if (!bIsMouseCaptured) ReleaseCapture();
 		break;
 
 	case WM_RBUTTONDOWN:
 		EventQueue.push_back({ EInputEventType::MouseButtonDown, MOUSE_RIGHT });
-		GetCursorPos(&LastMousePos);
-		bTrackingMouse = true;
-		SetCapture(Hwnd);
+		if (!bIsMouseCaptured)
+		{
+			GetCursorPos(&LastMousePos);
+			bTrackingMouse = true;
+			SetCapture(Hwnd);
+		}
 		break;
 
 	case WM_RBUTTONUP:
 		EventQueue.push_back({ EInputEventType::MouseButtonUp, MOUSE_RIGHT });
-		bTrackingMouse = false;
-		ReleaseCapture();
+		if (!bIsMouseCaptured)
+		{
+			bTrackingMouse = false;
+			ReleaseCapture();
+		}
 		break;
 
 	case WM_MBUTTONDOWN:
@@ -76,7 +83,21 @@ void FInputManager::Tick()
 	EventQueue.clear();
 
 	// Mouse delta
-	if (bTrackingMouse)
+	if (bIsMouseCaptured && TargetHwnd)
+	{
+		RECT Rect;
+		GetWindowRect(TargetHwnd, &Rect);
+		int32 CenterX = (Rect.left + Rect.right) / 2;
+		int32 CenterY = (Rect.top + Rect.bottom) / 2;
+
+		POINT CurrentPos;
+		GetCursorPos(&CurrentPos);
+		MouseDeltaX = static_cast<float>(CurrentPos.x - CenterX);
+		MouseDeltaY = static_cast<float>(CurrentPos.y - CenterY);
+
+		SetCursorPos(CenterX, CenterY);
+	}
+	else if (bTrackingMouse)
 	{
 		POINT CurrentPos;
 		GetCursorPos(&CurrentPos);
@@ -88,6 +109,28 @@ void FInputManager::Tick()
 	{
 		MouseDeltaX = 0.0f;
 		MouseDeltaY = 0.0f;
+	}
+}
+
+void FInputManager::SetMouseCapture(bool bInCapture)
+{
+	if (bIsMouseCaptured == bInCapture) return;
+
+	bIsMouseCaptured = bInCapture;
+	if (bIsMouseCaptured)
+	{
+		ShowCursor(FALSE);
+		if (TargetHwnd)
+		{
+			RECT Rect;
+			GetWindowRect(TargetHwnd, &Rect);
+			SetCursorPos((Rect.left + Rect.right) / 2, (Rect.top + Rect.bottom) / 2);
+		}
+	}
+	else
+	{
+		ShowCursor(TRUE);
+		bTrackingMouse = false;
 	}
 }
 

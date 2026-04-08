@@ -31,6 +31,9 @@ public:
 	void ProcessMessage(HWND Hwnd, UINT Msg, WPARAM WParam, LPARAM LParam);
 	void Tick();
 
+	void SetMouseCapture(bool bInCapture);
+	bool IsMouseCaptured() const { return bIsMouseCaptured; }
+
 	bool IsKeyDown(int32 Key) const;
 	bool IsKeyPressed(int32 Key) const;
 	bool IsKeyReleased(int32 Key) const;
@@ -63,4 +66,6 @@ private:
 	float MouseDeltaY = 0.0f;
 	POINT LastMousePos = {};
 	bool bTrackingMouse = false;
+	bool bIsMouseCaptured = false;
+	HWND TargetHwnd = nullptr;
 };
