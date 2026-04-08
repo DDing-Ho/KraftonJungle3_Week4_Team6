@@ -162,12 +162,34 @@ void FEditorViewportInputService::HandleMessage(
 	{
 	case WM_LBUTTONDOWN:
 		Slate->ProcessMouseDown(MouseX, MouseY);
+		// PIE 모드일 때 실제 뷰포트 영역(Slate Area) 내부를 클릭했을 때만 마우스 캡처
+		if (EditorEngine->IsPlayingInEditor() && Slate->GetIsCoursorInArea())
+		{
+			if (ImGui::GetCurrentContext() && !ImGui::GetIO().WantCaptureMouse)
+			{
+				if (FInputManager* Input = Engine->GetInputManager())
+				{
+					Input->SetMouseCapture(true);
+				}
+			}
+		}
 		break;
 	case WM_LBUTTONDBLCLK:
 		Slate->ProcessMouseDoubleClick(MouseX, MouseY);
 		return;
 	case WM_RBUTTONDOWN:
 		Slate->ProcessMouseDown(MouseX, MouseY);
+		// 우클릭 시에도 동일하게 뷰포트 영역 내부인지 확인 후 캡처
+		if (EditorEngine->IsPlayingInEditor() && Slate->GetIsCoursorInArea())
+		{
+			if (ImGui::GetCurrentContext() && !ImGui::GetIO().WantCaptureMouse)
+			{
+				if (FInputManager* Input = Engine->GetInputManager())
+				{
+					Input->SetMouseCapture(true);
+				}
+			}
+		}
 		break;
 	case WM_MOUSEMOVE:
 		Slate->ProcessMouseMove(MouseX, MouseY);

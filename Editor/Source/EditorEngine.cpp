@@ -341,6 +341,19 @@ void FEditorEngine::PrepareFrame(float DeltaTime)
 		{
 			EndPIE();
 		}
+
+		// F8: Possess/Eject 토글
+		static bool bF8WasDown = false;
+		bool bF8IsDown = (::GetAsyncKeyState(VK_F8) & 0x8000) != 0;
+		if (bF8IsDown && !bF8WasDown)
+		{
+			if (FInputManager* Input = GetInputManager())
+			{
+				Input->SetMouseCapture(!Input->IsMouseCaptured());
+				UE_LOG("[PIE] %s", Input->IsMouseCaptured() ? "Possessed" : "Ejected");
+			}
+		}
+		bF8WasDown = bF8IsDown;
 	}
 
 	SyncViewportClient();

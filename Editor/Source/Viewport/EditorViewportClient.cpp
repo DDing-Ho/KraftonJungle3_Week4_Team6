@@ -93,7 +93,7 @@ void FEditorViewportClient::CreateGridResource(FRenderer* Renderer)
 			GridMaterial->RegisterParameter("GridAxisV", SlotIndex, 32, 12);
 			GridMaterial->RegisterParameter("ViewForward", SlotIndex, 48, 12);
 
-			float DefaultGridSize = 10.0f;  
+			float DefaultGridSize = 10.0f;
 			float DefaultLineThickness = 1.0f;
 			const FVector DefaultGridAxisU = FVector::ForwardVector;
 			const FVector DefaultGridAxisV = FVector::RightVector;
