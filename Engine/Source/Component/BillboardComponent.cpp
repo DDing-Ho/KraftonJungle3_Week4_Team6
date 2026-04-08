@@ -13,7 +13,6 @@ void UBillboardComponent::PostConstruct()
 	bDrawDebugBounds = false;
 	bBillboard = true;
 	BillboardMesh = std::make_shared<FDynamicMesh>();
-	// MaterialInstance = std::make_shared<FDynamicMaterial>();
 
 	MaterialInstance = FMaterialManager::Get().FindByName("M_Default_Texture")->CreateDynamicMaterial();
 }

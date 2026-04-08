@@ -8,6 +8,7 @@
 #include "Component/TextRenderComponent.h"
 #include "Component/UUIDBillboardComponent.h"
 #include "Component/StaticMeshComponent.h"
+#include "Component/BillboardComponent.h"
 #include "Renderer/MeshData.h"
 #include <limits>
 #include "Component/SkyComponent.h"
@@ -176,7 +177,7 @@ AActor* FPicker::PickActor(ULevel* Level, const FViewportEntry* Entry, int32 Scr
 			UPrimitiveComponent* PrimComp = static_cast<UPrimitiveComponent*>(Component);
 
 			// ─── 2. 바운딩 스피어(구형) 기반 피킹 (Text, SubUV) ───
-			if (PrimComp->IsA(USubUVComponent::StaticClass()) || PrimComp->IsA(UTextRenderComponent::StaticClass()))
+			if (PrimComp->IsA(USubUVComponent::StaticClass()) || PrimComp->IsA(UTextRenderComponent::StaticClass()) || PrimComp->IsA(UBillboardComponent::StaticClass()))
 			{
 				const FBoxSphereBounds Bounds = PrimComp->GetWorldBounds();
 				FVector ToCenter = Bounds.Center - Ray.Origin;

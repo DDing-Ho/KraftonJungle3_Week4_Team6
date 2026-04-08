@@ -320,17 +320,6 @@ bool FRenderer::Initialize(HWND InHwnd, int32 Width, int32 Height)
 			DefaultTextureMaterial->GetConstantBuffer(SlotIndex)->SetData(DefaultScroll, sizeof(DefaultScroll), 16);
 		}
 
-		ID3D11ShaderResourceView* NewSRV = nullptr;
-		std::filesystem::path DefaultTexturePath = FPaths::ContentDir() / FString("Textures/SubUVDino.png");
-		if (!CreateTextureFromSTB(GetDevice(), DefaultTexturePath, &NewSRV))
-		{
-			return false;
-		}
-
-		auto MaterialTexture = std::make_shared<FMaterialTexture>();
-		MaterialTexture->TextureSRV = NewSRV;
-		DefaultTextureMaterial->SetMaterialTexture(MaterialTexture);
-
 		FMaterialManager::Get().Register("M_Default_Texture", DefaultTextureMaterial);
 	}
 
