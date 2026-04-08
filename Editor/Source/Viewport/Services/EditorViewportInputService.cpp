@@ -155,6 +155,26 @@ void FEditorViewportInputService::HandleMessage(
 		return;
 	}
 
+	// 최상단에서 ImGui 점유 확인 (다른 패널 클릭 시 뷰포트 로직 차단 및 포커스 해제)
+	if (ImGui::GetCurrentContext())
+	{
+		const ImGuiIO& IO = ImGui::GetIO();
+		if (IO.WantCaptureMouse)
+		{
+			if (Msg == WM_LBUTTONDOWN || Msg == WM_RBUTTONDOWN || Msg == WM_MBUTTONDOWN)
+			{
+				// 뷰포트 포커스를 명시적으로 해제 (파란 테두리 제거)
+				Slate->ClearFocus();
+				return;
+			}
+			
+			if (Msg == WM_LBUTTONUP || Msg == WM_RBUTTONUP || Msg == WM_MBUTTONUP || Msg == WM_MOUSEMOVE)
+			{
+				return;
+			}
+		}
+	}
+
 	const int32 MouseX = static_cast<int32>(static_cast<short>(LOWORD(LParam)));
 	const int32 MouseY = static_cast<int32>(static_cast<short>(HIWORD(LParam)));
 
@@ -165,12 +185,9 @@ void FEditorViewportInputService::HandleMessage(
 		// PIE 모드일 때 실제 뷰포트 영역(Slate Area) 내부를 클릭했을 때만 마우스 캡처
 		if (EditorEngine->IsPlayingInEditor() && Slate->GetIsCoursorInArea())
 		{
-			if (ImGui::GetCurrentContext() && !ImGui::GetIO().WantCaptureMouse)
+			if (FInputManager* Input = Engine->GetInputManager())
 			{
-				if (FInputManager* Input = Engine->GetInputManager())
-				{
-					Input->SetMouseCapture(true);
-				}
+				Input->SetMouseCapture(true);
 			}
 		}
 		break;
@@ -182,12 +199,9 @@ void FEditorViewportInputService::HandleMessage(
 		// 우클릭 시에도 동일하게 뷰포트 영역 내부인지 확인 후 캡처
 		if (EditorEngine->IsPlayingInEditor() && Slate->GetIsCoursorInArea())
 		{
-			if (ImGui::GetCurrentContext() && !ImGui::GetIO().WantCaptureMouse)
+			if (FInputManager* Input = Engine->GetInputManager())
 			{
-				if (FInputManager* Input = Engine->GetInputManager())
-				{
-					Input->SetMouseCapture(true);
-				}
+				Input->SetMouseCapture(true);
 			}
 		}
 		break;
@@ -203,32 +217,24 @@ void FEditorViewportInputService::HandleMessage(
 
 	if (Msg == WM_MOUSEWHEEL)
 	{
-		if (!ImGui::GetCurrentContext() || !ImGui::GetIO().WantCaptureMouse)
+		FViewportEntry* FocusedEntry = ViewportRegistry.FindEntryByViewportID(Slate->GetFocusedViewportId());
+		if (FocusedEntry && FocusedEntry->LocalState.ProjectionType != EViewportType::Perspective)
 		{
-			FViewportEntry* FocusedEntry = ViewportRegistry.FindEntryByViewportID(Slate->GetFocusedViewportId());
-			if (FocusedEntry && FocusedEntry->LocalState.ProjectionType != EViewportType::Perspective)
+			const float WheelDelta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(WParam)) / WHEEL_DELTA;
+			FocusedEntry->LocalState.OrthoZoom *= (1.0f - WheelDelta * 0.1f);
+			if (FocusedEntry->LocalState.OrthoZoom < 1.0f)
 			{
-				const float WheelDelta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(WParam)) / WHEEL_DELTA;
-				FocusedEntry->LocalState.OrthoZoom *= (1.0f - WheelDelta * 0.1f);
-				if (FocusedEntry->LocalState.OrthoZoom < 1.0f)
-				{
-					FocusedEntry->LocalState.OrthoZoom = 1.0f;
-				}
-				if (FocusedEntry->LocalState.OrthoZoom > 10000.0f)
-				{
-					FocusedEntry->LocalState.OrthoZoom = 10000.0f;
-				}
+				FocusedEntry->LocalState.OrthoZoom = 1.0f;
+			}
+			if (FocusedEntry->LocalState.OrthoZoom > 10000.0f)
+			{
+				FocusedEntry->LocalState.OrthoZoom = 10000.0f;
 			}
 		}
 		return;
 	}
 
 	if (Slate->IsDraggingSplitter())
-	{
-		return;
-	}
-
-	if (ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureMouse)
 	{
 		return;
 	}

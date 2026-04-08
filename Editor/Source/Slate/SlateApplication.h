@@ -79,6 +79,8 @@ public:
 	void ProcessMouseMove(int32 X, int32 Y);
 	void ProcessMouseUp(int32 X, int32 Y);
 
+	void ClearFocus() { FocusedViewportId = INVALID_VIEWPORT_ID; }
+
 	EMouseCursor GetCurrentCursor() const { return CurrentCursor; }
 	bool GetIsCoursorInArea() const { return IsCursorInArea; }
 	std::function<void()> OnSplitterDragEnd;
