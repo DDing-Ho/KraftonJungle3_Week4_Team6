@@ -9,6 +9,8 @@
 #include "Core/Paths.h"
 #include "Debug/EngineLog.h"
 #include "Renderer/Material.h"
+#include "Actor/Actor.h"
+
 IMPLEMENT_RTTI(UStaticMeshComponent, UMeshComponent)
 
 void UStaticMeshComponent::SetStaticMesh(UStaticMesh* InStaticMesh)
@@ -44,6 +46,17 @@ FBoxSphereBounds UStaticMeshComponent::GetLocalBounds() const
 		return StaticMesh->LocalBounds;
 	}
 	return UPrimitiveComponent::GetLocalBounds();
+}
+
+void UStaticMeshComponent::Tick(float DeltaTime)
+{
+	SetRelativeLocation(GetWorldLocation() + GetWorldTransform().GetForwardVector() * DeltaTime);
+
+	/*if (GetOwner()->GetWorld()->GetWorldType() == EWorldType::PIE)
+	{
+		SetRelativeLocation(GetWorldLocation() + GetWorldTransform().GetForwardVector() * DeltaTime);
+
+	}*/
 }
 
 FBoxSphereBounds UStaticMeshComponent::CalcBounds(const FMatrix& LocalToWorld) const

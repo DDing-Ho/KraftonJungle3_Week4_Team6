@@ -132,10 +132,15 @@ void FEditorViewportRenderService::RenderAll(
 		const FVector CameraPosition = Queue.ViewMatrix.GetInverse().GetTranslation();
 		BuildRenderCommands(Engine, Scene, Frustum, Entry.LocalState.ShowFlags, CameraPosition, Queue);
 
-		AActor* GizmoTarget = EditorEngine->GetSelectedActor();
-		if (GizmoTarget && GizmoTarget->GetComponentByClass<USkyComponent>() == nullptr)
+		const bool bPIE = EditorEngine->IsPIEActive();
+
+		if (!bPIE)
 		{
-			Gizmo.BuildRenderCommands(GizmoTarget, &Entry, Queue);
+			AActor* GizmoTarget = EditorEngine->GetSelectedActor();
+			if (GizmoTarget && GizmoTarget->GetComponentByClass<USkyComponent>() == nullptr)
+			{
+				Gizmo.BuildRenderCommands(GizmoTarget, &Entry, Queue);
+			}
 		}
 
 		if (Entry.LocalState.ViewMode == ERenderMode::Wireframe && WireFrameMaterial)
@@ -143,7 +148,7 @@ void FEditorViewportRenderService::RenderAll(
 			ApplyWireframe(Queue, WireFrameMaterial.get());
 		}
 
-		if (Entry.LocalState.bShowGrid && GridMesh && GridMaterial)
+		if (!bPIE && Entry.LocalState.bShowGrid && GridMesh && GridMaterial)
 		{
 			FVector GridAxisU = FVector::ForwardVector;
 			FVector GridAxisV = FVector::RightVector;

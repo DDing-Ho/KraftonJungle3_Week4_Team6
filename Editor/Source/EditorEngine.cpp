@@ -282,7 +282,10 @@ void FEditorEngine::TickWorlds(float DeltaTime)
 
 	if (UWorld* ActiveWorld = GetActiveWorld())
 	{
-		ActiveWorld->Tick(DeltaTime);
+		if (!bIsPIEPaused)
+		{
+			ActiveWorld->Tick(DeltaTime);
+		}
 	}
 }
 
@@ -358,12 +361,32 @@ void FEditorEngine::StartPIE()
 	UE_LOG("[PIE] Start");
 }
 
+void FEditorEngine::PausePIE()
+{
+	if (bIsPIEActive && !bIsPIEPaused)
+	{
+		bIsPIEPaused = true;
+		UE_LOG("[PIE] Paused");
+	}
+}
+
+void FEditorEngine::ResumePIE()
+{
+	if (bIsPIEActive && bIsPIEPaused)
+	{
+		bIsPIEPaused = false;
+		UE_LOG("[PIE] Resumed");
+	}
+}
+
 void FEditorEngine::StopPIE()
 {
 	if (!bIsPIEActive || !PIEWorldContext)
 	{
 		return;
 	}
+
+	bIsPIEPaused = false;
 
 	// 1. 활성 월드를 즉시 Editor로 복귀시켜 PIE World가 더 이상 Tick/Render되지 않도록 한다.
 	//    이후 단계에서 PIE 객체에 접근하는 시스템이 없게 만드는 것이 크래시 방지의 핵심이다.
@@ -600,6 +623,14 @@ void FEditorEngine::SyncFocusedViewportLocalState()
 {
 	if (!EditorViewportClientRaw || !SlateApplication)
 	{
+		return;
+	}
+
+	// PIE 일시정지 중에는 WASD 카메라 이동을 차단한다.
+	// SetActiveLocalState(nullptr)로 설정하면 컨트롤러 바인딩이 조기 반환한다.
+	if (bIsPIEPaused)
+	{
+		CameraSubsystem.GetViewportController()->SetActiveLocalState(nullptr);
 		return;
 	}
 

@@ -17,7 +17,7 @@ public:
 	bool IsRegistered() const { return bRegistered; }
 	virtual void OnRegister() { bRegistered = true; }
 	virtual void OnUnregister() { bRegistered = false; }
-	virtual void BeginPlay() { bBegunPlay = true; }
+	virtual void BeginPlay() { bBegunPlay = true; bCanEverTick = true; bTickEnabled = true; }
 	virtual void Tick(float DeltaTime) {}
 	bool HasBegunPlay() const { return bBegunPlay; }
 	bool CanTick() const { return bCanEverTick && bTickEnabled; }

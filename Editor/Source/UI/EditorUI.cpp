@@ -13,6 +13,7 @@
 #include "imgui_internal.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+#include "IconsFontAwesome6.h"
 
 #include "Core/ViewportClient.h"
 #include "Core/Paths.h"
@@ -183,10 +184,11 @@ void FEditorUI::AttachToRenderer(FRenderer* InRenderer)
 	ContentBrowser.SetFolderIcon(CurrentRenderer->GetFolderIconSRV());
 	ContentBrowser.SetFileIcon(CurrentRenderer->GetFileIconSRV());
 
-	std::filesystem::path FontPath = FPaths::ProjectRoot() / "Content" / "Fonts" / "NotoSansKR-Bold.ttf";
+	std::filesystem::path FontPath     = FPaths::ProjectRoot() / "Content" / "Fonts" / "NotoSansKR-Bold.ttf";
+	std::filesystem::path IconFontPath = FPaths::ProjectRoot() / "Content" / "Fonts" / "fa-solid-900.ttf";
 	std::wstring FontPathWString = FontPath.wstring();
 	InRenderer->SetGUICallbacks(
-		[Hwnd, Device, DeviceContext, FontPathWString, FontPath]()
+		[Hwnd, Device, DeviceContext, FontPathWString, FontPath, IconFontPath]()
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -227,6 +229,27 @@ void FEditorUI::AttachToRenderer(FRenderer* InRenderer)
 			{
 				MessageBoxW(nullptr, FontPathWString.c_str(), L"Failed to load font", MB_OK);
 				IO.Fonts->AddFontDefault();
+			}
+
+			// FontAwesome 6 아이콘 폰트를 기존 폰트에 병합한다.
+			// fa-solid-900.ttf 파일이 없으면 조용히 스킵한다.
+			FILE* fIcon = nullptr;
+			_wfopen_s(&fIcon, IconFontPath.c_str(), L"rb");
+			if (fIcon)
+			{
+				fseek(fIcon, 0, SEEK_END);
+				size_t iconSize = ftell(fIcon);
+				fseek(fIcon, 0, SEEK_SET);
+				void* iconData = IM_ALLOC(iconSize);
+				fread(iconData, 1, iconSize, fIcon);
+				fclose(fIcon);
+
+				ImFontConfig IconConfig;
+				IconConfig.MergeMode  = true;   // 기존 폰트에 병합
+				IconConfig.PixelSnapH = true;
+				IconConfig.GlyphMinAdvanceX = 14.0f;
+				static const ImWchar IconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+				IO.Fonts->AddFontFromMemoryTTF(iconData, (int)iconSize, 14.0f, &IconConfig, IconRanges);
 			}
 
 			ImGui::StyleColorsDark();
@@ -285,7 +308,8 @@ void FEditorUI::AttachToRenderer(FRenderer* InRenderer)
 			}
 	
 			AActor* Selected = Engine->GetSelectedActor();
-			if (Selected && !Selected->IsPendingDestroy() && Selected->IsVisible()
+			if (!Engine->IsPIEActive()
+				&& Selected && !Selected->IsPendingDestroy() && Selected->IsVisible()
 				&& Selected->GetComponentByClass<USkyComponent>() == nullptr
 				&& [&]() -> bool {
 				const FEditorViewportRegistry& ViewportRegistry = Engine->GetViewportRegistry();

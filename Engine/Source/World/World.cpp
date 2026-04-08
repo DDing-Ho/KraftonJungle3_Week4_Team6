@@ -96,6 +96,7 @@ void UWorld::Tick(float InDeltaTime)
 	DeltaSeconds = InDeltaTime;
 	WorldTime += InDeltaTime;
 
+
 	if (PersistentLevel)
 	{
 		PersistentLevel->Tick(InDeltaTime);
@@ -107,6 +108,7 @@ void UWorld::Tick(float InDeltaTime)
 			Level->Tick(InDeltaTime);
 		}
 	}
+
 }
 
 void UWorld::CleanupWorld()

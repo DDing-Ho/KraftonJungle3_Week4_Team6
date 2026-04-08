@@ -40,6 +40,12 @@ void FEditorViewportInputService::TickCameraNavigation(
 		}
 	}
 
+	// PIE 일시정지 중에는 마우스 회전을 차단한다.
+	if (EditorEngine->IsPIEPaused())
+	{
+		return;
+	}
+
 	FInputManager* Input = Engine->GetInputManager();
 	if (!Input || !Input->IsMouseButtonDown(FInputManager::MOUSE_RIGHT) || Gizmo.IsDragging())
 	{
@@ -199,6 +205,12 @@ void FEditorViewportInputService::HandleMessage(
 	}
 
 	if (ImGui::GetCurrentContext() && ImGui::GetIO().WantCaptureMouse)
+	{
+		return;
+	}
+
+	// PIE 중에는 액터 선택·기즈모 조작·단축키를 모두 차단한다.
+	if (EditorEngine->IsPIEActive())
 	{
 		return;
 	}
