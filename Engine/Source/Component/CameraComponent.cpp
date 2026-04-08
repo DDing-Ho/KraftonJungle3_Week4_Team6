@@ -16,10 +16,19 @@ UCameraComponent::~UCameraComponent()
 	Camera = nullptr;
 }
 
+void UCameraComponent::DuplicateSubObjects()
+{
+	USceneComponent::DuplicateSubObjects();
+
+	// copy constructor이 Camera 포인터를 얕게 복사했으므로
+	// 원본과 설정이 동일한 새 FCamera를 생성해 소유권을 분리한다.
+
+	Camera = Camera ? new FCamera(*Camera) : new FCamera();
+}
+
 void UCameraComponent::Tick(float DeltaTime)
 {
 	USceneComponent::Tick(DeltaTime);
-
 	//TODO : will be add CameraArm, shake and interpolation  
 }
 

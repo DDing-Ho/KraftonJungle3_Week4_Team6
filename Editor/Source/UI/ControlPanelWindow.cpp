@@ -22,6 +22,7 @@
 
 #include "Actor/CubeActor.h"
 #include "Actor/PlaneActor.h"
+#include "Actor/PlayerStart.h"
 #include "Actor/SkySphereActor.h"
 #include "Actor/SphereActor.h"
 #include "Actor/StaticMeshActor.h"
@@ -192,7 +193,7 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 		ImGui::SeparatorText("Spawn");
 
 		static int32 SpawnTypeIndex = 0;
-		const char* SpawnTypes[] = { "Cube", "Sphere", "Plane", "SubUV", "Text", "SkySphere", "Staticmesh" };
+		const char* SpawnTypes[] = { "Cube", "Sphere", "Plane", "SubUV", "Text", "SkySphere", "Staticmesh", "PlayerStart" };
 
 		ImGui::Combo("Type", &SpawnTypeIndex, SpawnTypes, IM_ARRAYSIZE(SpawnTypes));
 
@@ -247,6 +248,10 @@ void FControlPanelWindow::Render(FEditorEngine* Engine)
 			else if (SpawnTypeIndex == 5)
 			{
 				NewActor = Scene->SpawnActor<ASkySphereActor>(Name);
+			}
+			else if (SpawnTypeIndex == 7)
+			{
+				NewActor = Scene->SpawnActor<APlayerStart>(Name);
 			}
 			else
 			{

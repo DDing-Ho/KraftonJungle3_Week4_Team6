@@ -40,6 +40,7 @@ public:
 	void ClearTextMeshDirty() { bTextMeshDirty = false; }
 
 	void Serialize(FArchive& Ar) override;
+	virtual void DuplicateSubObjects() override;
 
 protected:
 	FString Text = "Text";

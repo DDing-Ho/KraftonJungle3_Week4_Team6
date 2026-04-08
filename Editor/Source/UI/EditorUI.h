@@ -1,9 +1,10 @@
 #pragma once
-#include "OutlinerWindow.h" 
+#include "OutlinerWindow.h"
 #include "ControlPanelWindow.h"
 #include "PropertyWindow.h"
 #include "ConsoleWindow.h"
 #include "StatWindow.h"
+#include "PIEToolbarWindow.h"
 #include "Types/ObjectPtr.h"
 #include "ContentBrowserWindow.h"
 #include "Viewport/ViewportTypes.h"
@@ -49,6 +50,7 @@ private:
 	FStatWindow Stat;
 	FOutlinerWindow Outliner;
 	FContentBrowserWindow ContentBrowser;
+	FPIEToolbarWindow PIEToolbar;
 
 	bool bWindowSetup = false;
 	bool bViewportClientActive = false;

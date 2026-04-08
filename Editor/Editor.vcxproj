@@ -178,6 +178,7 @@
     <ClCompile Include="Source\UI\ConsoleWindow.cpp" />
     <ClCompile Include="Source\UI\ContentBrowserWindow.cpp" />
     <ClCompile Include="Source\UI\ControlPanelWindow.cpp" />
+    <ClCompile Include="Source\UI\PIEToolbarWindow.cpp" />
     <ClCompile Include="Source\UI\EditorUI.cpp" />
     <ClCompile Include="Source\UI\OutlinerWindow.cpp" />
     <ClCompile Include="Source\UI\PropertyWindow.cpp" />
@@ -233,6 +234,7 @@
     <ClInclude Include="Source\UI\ConsoleWindow.h" />
     <ClInclude Include="Source\UI\ContentBrowserWindow.h" />
     <ClInclude Include="Source\UI\ControlPanelWindow.h" />
+    <ClInclude Include="Source\UI\PIEToolbarWindow.h" />
     <ClInclude Include="Source\UI\EditorDebugState.h" />
     <ClInclude Include="Source\UI\EditorUI.h" />
     <ClInclude Include="Source\UI\OutlinerWindow.h" />

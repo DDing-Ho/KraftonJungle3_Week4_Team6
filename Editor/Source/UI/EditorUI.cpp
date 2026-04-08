@@ -878,6 +878,10 @@ void FEditorUI::Render()
 			}
 			ImGui::EndMenu();
 		}
+
+		// PIE 버튼 — 메뉴바 중앙에 배치
+		PIEToolbar.RenderInMenuBar(Engine);
+
 		ImGui::EndMainMenuBar();
 	}
 

@@ -23,6 +23,7 @@
     <ClInclude Include="Source\EngineAPI.h" />
     <ClInclude Include="Source\Actor\Actor.h" />
     <ClInclude Include="Source\Actor\CubeActor.h" />
+    <ClInclude Include="Source\Actor\PlayerStart.h" />
     <ClInclude Include="Source\Actor\PlaneActor.h" />
     <ClInclude Include="Source\Actor\SkySphereActor.h" />
     <ClInclude Include="Source\Actor\SphereActor.h" />
@@ -216,6 +217,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Actor\Actor.cpp" />
     <ClCompile Include="Source\Actor\CubeActor.cpp" />
+    <ClCompile Include="Source\Actor\PlayerStart.cpp" />
     <ClCompile Include="Source\Actor\PlaneActor.cpp" />
     <ClCompile Include="Source\Actor\SkySphereActor.cpp" />
     <ClCompile Include="Source\Actor\SphereActor.cpp" />

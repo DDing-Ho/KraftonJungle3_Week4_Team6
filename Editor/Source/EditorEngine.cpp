@@ -3,6 +3,7 @@
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
 #include "Actor/Actor.h"
+#include "Actor/PlayerStart.h"
 #include "Camera/Camera.h"
 #include "Component/CameraComponent.h"
 #include "Component/StaticMeshComponent.h"
@@ -260,10 +261,139 @@ void FEditorEngine::PrepareFrame(float DeltaTime)
 
 void FEditorEngine::TickWorlds(float DeltaTime)
 {
+	// PIE 활성 중 뷰포트 입력(WASD/마우스)이 업데이트한 LocalState를 PIE 카메라에 반영한다.
+	// ProcessInput이 완료된 직후 호출되므로 이 프레임의 입력이 모두 반영된 상태다.
+	if (bIsPIEActive && PIEWorldContext && PIEWorldContext->World)
+	{
+		if (UCameraComponent* PIECam = PIEWorldContext->World->GetActiveCameraComponent())
+		{
+			const FViewportEntry* PerspEntry = ViewportRegistry.FindEntryByType(EViewportType::Perspective);
+			if (PerspEntry)
+			{
+				FCamera* Cam = PIECam->GetCamera();
+				Cam->SetPosition(PerspEntry->LocalState.Position);
+				Cam->SetRotation(PerspEntry->LocalState.Rotation.Yaw, PerspEntry->LocalState.Rotation.Pitch);
+				Cam->SetFOV(PerspEntry->LocalState.FovY);
+				Cam->SetNearPlane(PerspEntry->LocalState.NearPlane);
+				Cam->SetFarPlane(PerspEntry->LocalState.FarPlane);
+			}
+		}
+	}
+
 	if (UWorld* ActiveWorld = GetActiveWorld())
 	{
 		ActiveWorld->Tick(DeltaTime);
 	}
+}
+
+void FEditorEngine::StartPIE()
+{
+	if (bIsPIEActive || !EditorWorldContext || !EditorWorldContext->World)
+	{
+		return;
+	}
+
+	// 1. Editor World를 복사하여 PIE World 생성
+	UWorld* PIEWorld = static_cast<UWorld*>(EditorWorldContext->World->Duplicate(nullptr));
+	if (!PIEWorld)
+	{
+		UE_LOG("[PIE] World Duplicate 실패");
+		return;
+	}
+
+	// 2. PIE 타입으로 설정
+	PIEWorld->SetWorldType(EWorldType::PIE);
+
+	// 3. PIE WorldContext 생성 및 등록
+	PIEWorldContext = new FWorldContext();
+	PIEWorldContext->ContextName = "PIE";
+	PIEWorldContext->WorldType   = EWorldType::PIE;
+	PIEWorldContext->World       = PIEWorld;
+
+	// 4. 활성 월드를 PIE로 전환
+	ActiveEditorWorldContext = PIEWorldContext;
+	bIsPIEActive = true;
+
+	// 5. BeginPlay 호출
+	PIEWorld->BeginPlay();
+
+	// PIE 카메라 초기 위치 설정
+	// PlayerStart가 레벨에 있으면 그 위치에서, 없으면 현재 에디터 카메라 위치에서 시작한다.
+	FViewportEntry* PerspEntry = ViewportRegistry.FindEntryByType(EViewportType::Perspective);
+	if (PerspEntry)
+	{
+		// PIE 월드에서 PlayerStart 탐색
+		APlayerStart* FoundPlayerStart = nullptr;
+		if (UScene* Level = PIEWorld->GetPersistentLevel())
+		{
+			for (AActor* Actor : Level->GetActors())
+			{
+				if (Actor && Actor->IsA(APlayerStart::StaticClass()))
+				{
+					FoundPlayerStart = static_cast<APlayerStart*>(Actor);
+					break;
+				}
+			}
+		}
+
+		if (FoundPlayerStart && FoundPlayerStart->GetRootComponent())
+		{
+			PerspEntry->LocalState.Position = FoundPlayerStart->GetRootComponent()->GetWorldLocation();
+
+			PerspEntry->LocalState.Rotation = FoundPlayerStart->GetRootComponent()->GetRelativeTransform().Rotator();
+
+		}
+		// else: LocalState.Position은 에디터 카메라 위치 그대로 유지
+
+		// FoV / Near / Far는 에디터 뷰포트 설정을 그대로 사용
+		if (UCameraComponent* PIECam = PIEWorld->GetActiveCameraComponent())
+		{
+			FCamera* Cam = PIECam->GetCamera();
+			Cam->SetFOV(PerspEntry->LocalState.FovY);
+			Cam->SetNearPlane(PerspEntry->LocalState.NearPlane);
+			Cam->SetFarPlane(PerspEntry->LocalState.FarPlane);
+		}
+	}
+
+	UE_LOG("[PIE] Start");
+}
+
+void FEditorEngine::StopPIE()
+{
+	if (!bIsPIEActive || !PIEWorldContext)
+	{
+		return;
+	}
+
+	// 1. 활성 월드를 즉시 Editor로 복귀시켜 PIE World가 더 이상 Tick/Render되지 않도록 한다.
+	//    이후 단계에서 PIE 객체에 접근하는 시스템이 없게 만드는 것이 크래시 방지의 핵심이다.
+	bIsPIEActive = false;
+	ActiveEditorWorldContext = EditorWorldContext;
+
+	// 2. PIE 중 선택된 액터가 PIE World 소속이면 해제한다.
+	//    GC 이후 댕글링 포인터로 접근되는 것을 막는다.
+	if (AActor* Selected = GetSelectedActor())
+	{
+		if (Selected->GetWorld() == PIEWorldContext->World)
+		{
+			SetSelectedActor(nullptr);
+		}
+	}
+
+	// 3. PIE World의 Actors/Components를 PendingKill로 마킹하고 World도 마킹한다.
+	//    GC가 순서대로 정리한다. CleanupWorld()가 Actors 배열을 비워두므로
+	//    ~UScene()에서 이미 GC된 Actor에 접근하는 이중 해제가 발생하지 않는다.
+	if (PIEWorldContext->World)
+	{
+		PIEWorldContext->World->CleanupWorld();
+		PIEWorldContext->World->MarkPendingKill();
+	}
+
+	// 4. FWorldContext 구조체만 삭제한다 (UWorld는 GC가 처리).
+	delete PIEWorldContext;
+	PIEWorldContext = nullptr;
+
+	UE_LOG("[PIE] Stop");
 }
 
 std::unique_ptr<IViewportClient> FEditorEngine::CreateViewportClient()

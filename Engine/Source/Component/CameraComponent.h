@@ -11,6 +11,7 @@ public:
 
 	void PostConstruct() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void DuplicateSubObjects() override;
 	//Movement method
 	void MoveForward(float Value);
 	void MoveRight(float Value);

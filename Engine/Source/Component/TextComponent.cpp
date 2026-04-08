@@ -33,6 +33,18 @@ FRenderMesh* UTextComponent::GetRenderMesh() const
 	return TextMesh.get();
 }
 
+void UTextComponent::DuplicateSubObjects()
+{
+	UPrimitiveComponent::DuplicateSubObjects();
+
+	// copy constructor가 shared_ptr을 얕게 복사해 원본과 같은 FDynamicMesh를 공유한다.
+	// 새 인스턴스를 만들어 소유권을 분리하고 dirty 플래그를 세워 다음 프레임에 재빌드되게 한다.
+	TextMesh = std::make_shared<FDynamicMesh>();
+	TextMesh->Topology = EMeshTopology::EMT_TriangleList;
+	bTextMeshDirty = true;
+	TextMesh->bIsDirty = true;
+}
+
 void UTextComponent::Serialize(FArchive& Ar)
 {
 	UPrimitiveComponent::Serialize(Ar);

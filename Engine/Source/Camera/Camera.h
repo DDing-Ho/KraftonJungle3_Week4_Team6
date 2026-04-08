@@ -37,6 +37,10 @@ public:
 	float GetPitch() const;
 	float GetFOV() const;
 	void SetFOV(float InFOV);
+	float GetNearPlane() const { return NearPlane; }
+	float GetFarPlane() const { return FarPlane; }
+	void SetNearPlane(float InNear) { NearPlane = InNear; }
+	void SetFarPlane(float InFar) { FarPlane = InFar; }
 	ECameraProjectionMode GetProjectionMode() const;
 	bool IsOrthographic() const;
 	void SetProjectionMode(ECameraProjectionMode InProjectionMode);
