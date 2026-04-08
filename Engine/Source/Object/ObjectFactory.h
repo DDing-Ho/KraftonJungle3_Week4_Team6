@@ -41,6 +41,12 @@ public:
 	static uint32 GetLastUUID();
 	static void SetLastUUID(uint32 InUUID);
 
+	/**
+	 * copy constructor로 생성된 객체에 새 UUID를 발급하고 GUObjectArray에 등록한다.
+	 * UObject::PostDuplicate() 에서만 호출된다.
+	 */
+	static void RegisterDuplicate(UObject* NewObj);
+
 private:
 	static uint32 LastUUID;
 	static uint32 GenerateUUID();

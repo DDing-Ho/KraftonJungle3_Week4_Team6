@@ -41,6 +41,42 @@ void UWorld::InitializeWorld(float AspectRatio, ID3D11Device* Device)
 	}
 }
 
+void UWorld::DuplicateSubObjects()
+{
+	// PersistentLevel 복사 (sub-object, Outer = World)
+	if (PersistentLevel)
+	{
+		PersistentLevel = static_cast<UScene*>(PersistentLevel->Duplicate(this));
+	}
+
+	// StreamingLevels 복사 (sub-objects)
+	TArray<UScene*> OrigLevels = StreamingLevels;
+	StreamingLevels.clear();
+	for (UScene* OrigLevel : OrigLevels)
+	{
+		if (!OrigLevel) continue;
+		if (UScene* LevelCopy = static_cast<UScene*>(OrigLevel->Duplicate(this)))
+		{
+			StreamingLevels.push_back(LevelCopy);
+		}
+	}
+
+	// SceneCameraComponent 복사 (sub-object, Outer = World)
+	if (SceneCameraComponent)
+	{
+		SceneCameraComponent = static_cast<UCameraComponent*>(SceneCameraComponent->Duplicate(this));
+	}
+
+	// ActiveCameraComponent — 원본이 SceneCamera였으면 복사본으로, 아니면 일단 SceneCamera로
+	// TODO: Actor 소속 카메라였을 경우 Duplicate Map으로 정확한 복사본을 연결해야 한다.
+	ActiveCameraComponent = SceneCameraComponent;
+
+	// 월드 상태 초기화
+	bBegunPlay = false;
+	WorldTime = 0.f;
+	DeltaSeconds = 0.f;
+}
+
 void UWorld::BeginPlay()
 {
 	if (bBegunPlay) return;  

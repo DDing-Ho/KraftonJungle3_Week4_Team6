@@ -1,5 +1,6 @@
 #include "Object/Object.h"
 #include "Object/Class.h"
+#include "Object/ObjectFactory.h"
 #include "Memory/MemoryBase.h"
 
 // 조건 1: 전역 오브젝트 배열 정의
@@ -111,6 +112,30 @@ UObject* UObject::GetOuter() const
 
 void UObject::PostConstruct()
 {
+}
+
+// UObject 자체의 기본 구현. DECLARE_RTTI를 쓰는 파생 클래스는 매크로가 자동 생성한다.
+UObject* UObject::Duplicate(UObject* NewOuter) const
+{
+	UObject* NewObj = new UObject(*this);
+	NewObj->PostDuplicate(NewOuter ? NewOuter : GetOuter(), GetName());
+	NewObj->DuplicateSubObjects();
+	return NewObj;
+}
+
+void UObject::PostDuplicate(UObject* NewOuter, const FString& NewName)
+{
+	// copy constructor가 복사한 identity 필드를 초기화한다.
+	UUID = 0;
+	InternalIndex = 0;
+	Outer = NewOuter;
+	Name = NewName;
+
+	// PendingKill은 복사하지 않는다.
+	ClearFlags(EObjectFlags::PendingKill);
+
+	// 새 UUID 발급 및 전역 배열 등록을 팩토리에 위임한다.
+	FObjectFactory::RegisterDuplicate(this);
 }
 
 FString UObject::GetPathName() const

@@ -1,8 +1,18 @@
 #include "ActorComponent.h"
+#include "Actor/Actor.h"
 #include "Object/Class.h"
 #include "Serializer/Archive.h"
 
 IMPLEMENT_RTTI(UActorComponent, UObject)
+
+void UActorComponent::DuplicateSubObjects()
+{
+	// Owner 캐시를 복사된 Outer(= Actor_copy)로 재설정한다.
+	Owner = GetTypedOuter<AActor>();
+
+	bBegunPlay = false;
+	bRegistered = false;
+}
 
 void UActorComponent::Serialize(FArchive& Ar)
 {

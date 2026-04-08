@@ -4,6 +4,15 @@
 
 IMPLEMENT_RTTI(USceneComponent, UActorComponent)
 
+void USceneComponent::DuplicateSubObjects()
+{
+	UActorComponent::DuplicateSubObjects();
+
+	// TODO: AttachParent / AttachChildren 은 형제 컴포넌트 간 참조라 Duplicate Map 없이는 올바른 복사본으로 교체할 수 없다.
+	AttachParent = nullptr;
+	AttachChildren.clear();
+}
+
 void USceneComponent::SetRelativeTransform(const FTransform& InTransform)
 {
 	RelativeTransform = InTransform;

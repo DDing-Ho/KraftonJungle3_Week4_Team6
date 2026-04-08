@@ -25,6 +25,9 @@ public:
 
 	virtual void Serialize(FArchive& Ar);
 
+	/** copy constructor로 복사된 Owner 포인터를 재설정하고 플레이 상태를 초기화한다. */
+	virtual void DuplicateSubObjects() override;
+
 protected:
 	TObjectPtr<AActor> Owner;
 	bool bRegistered = false;

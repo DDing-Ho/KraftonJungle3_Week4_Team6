@@ -12,7 +12,14 @@
         } \
 		ClassName() : ParentClassName("") {} \
 		ClassName(const FString& InName, UObject* InOuter = nullptr) \
-			: ParentClassName(InName, InOuter) {}
+			: ParentClassName(InName, InOuter) {} \
+		virtual UObject* Duplicate(UObject* NewOuter = nullptr) const override \
+		{ \
+			ClassName* NewObj = new ClassName(*this); \
+			NewObj->PostDuplicate(NewOuter ? NewOuter : GetOuter(), GetName()); \
+			NewObj->DuplicateSubObjects(); \
+			return NewObj; \
+		}
 
 #define IMPLEMENT_RTTI(ClassName, ParentClassName) \
     namespace { \
@@ -123,6 +130,25 @@ public:
 	void MarkPendingKill();
 	/** 이 객체가 삭제 예정 상태인지 확인한다. */
 	bool IsPendingKill() const;
+
+	/**
+	 * copy constructor로 얕은 복사 후 DuplicateSubObjects()를 호출한다.
+	 * DECLARE_RTTI 매크로가 파생 클래스마다 자동 생성하므로 직접 오버라이드 불필요.
+	 * NewOuter가 nullptr이면 원본과 동일한 Outer를 사용한다.
+	 */
+	virtual UObject* Duplicate(UObject* NewOuter = nullptr) const;
+
+	/**
+	 * copy constructor로 복사된 서브 오브젝트 포인터를 깊은 복사로 교체한다.
+	 * 서브 오브젝트를 멤버로 가진 파생 클래스만 오버라이드하면 된다.
+	 */
+	virtual void DuplicateSubObjects() {}
+
+	/**
+	 * copy constructor 직후 UUID / Outer / GUObjectArray 등록을 재설정한다.
+	 * DECLARE_RTTI가 생성한 Duplicate() 내부에서만 호출된다.
+	 */
+	void PostDuplicate(UObject* NewOuter, const FString& NewName);
 
 private:
 	FString			Name;

@@ -315,3 +315,36 @@ void AActor::SetActorLocation(const FVector& InLocation)
 
 	RootComponent->SetRelativeLocation(InLocation);
 }
+
+void AActor::DuplicateSubObjects()
+{
+	// 1. Scene 캐시를 복사된 Outer(= Scene_copy)로 재설정한다.
+	Scene = GetTypedOuter<UScene>();
+
+	// 2. copy constructor가 얕게 복사한 OwnedComponents를 깊은 복사본으로 교체한다.
+	USceneComponent* OrigRoot = RootComponent;
+	TArray<UActorComponent*> OrigComps = OwnedComponents;
+	OwnedComponents.clear();
+	RootComponent = nullptr;
+
+	for (UActorComponent* OrigComp : OrigComps)
+	{
+		if (!OrigComp) continue;
+
+		// 컴포넌트를 this(= Actor_copy)를 Outer로 하여 복사한다.
+		UActorComponent* CompCopy = static_cast<UActorComponent*>(OrigComp->Duplicate(this));
+		if (!CompCopy) continue;
+
+		OwnedComponents.push_back(CompCopy);
+
+		// 원본 RootComponent에 해당하는 복사본을 RootComponent로 재연결한다.
+		if (OrigComp == OrigRoot)
+		{
+			RootComponent = static_cast<USceneComponent*>(CompCopy);
+		}
+	}
+
+	// 3. PIE에서 BeginPlay가 새로 호출되도록 상태를 초기화한다.
+	bActorBegunPlay = false;
+	bPendingDestroy = false;
+}

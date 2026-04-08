@@ -63,6 +63,9 @@ public:
 	/** 액터와 소유 컴포넌트들의 직렬화/역직렬화를 수행한다. */
 	virtual void Serialize(FArchive& Ar);
 
+	/** copy constructor로 복사된 포인터를 깊은 복사본으로 교체한다. */
+	virtual void DuplicateSubObjects() override;
+
 	bool HasBegunPlay() const { return bActorBegunPlay; }
 	bool IsPendingDestroy() const { return bPendingDestroy; }
 	bool CanTick() const { return bCanEverTick && bTickEnabled; }

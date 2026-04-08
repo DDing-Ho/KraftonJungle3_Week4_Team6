@@ -59,6 +59,8 @@ public:
 	void ClearActors();
 	/** 아직 BeginPlay가 호출되지 않은 액터들에게 한 번만 BeginPlay를 전파한다. */
 	void BeginPlay();
+
+	virtual void DuplicateSubObjects() override;
 	/** 씬 안의 액터를 순회하며 Tick하고, 끝나면 파괴 대상을 정리한다. */
 	void Tick(float DeltaTime);
 

@@ -58,6 +58,8 @@ public:
 	/** 월드가 소유한 씬, 카메라, 스트리밍 레벨을 정리하고 초기 상태로 되돌린다. */
 	void CleanupWorld();
 
+	virtual void DuplicateSubObjects() override;
+
 	EWorldType GetWorldType() const { return WorldType; }
 	void SetWorldType(EWorldType InType) { WorldType = InType; }
 	float GetWorldTime() const { return WorldTime; }

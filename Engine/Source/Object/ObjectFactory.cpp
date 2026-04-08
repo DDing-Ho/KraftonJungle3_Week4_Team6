@@ -61,3 +61,11 @@ uint32 FObjectFactory::GenerateUUID()
 {
 	return ++LastUUID;
 }
+
+void FObjectFactory::RegisterDuplicate(UObject* NewObj)
+{
+	NewObj->UUID = GenerateUUID();
+	NewObj->InternalIndex = static_cast<uint32>(GUObjectArray.size());
+	GUObjectArray.push_back(NewObj);
+	GUUIDToObjectMap[NewObj->UUID] = NewObj;
+}

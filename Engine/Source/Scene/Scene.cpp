@@ -131,6 +131,23 @@ void UScene::BeginPlay()
 	}
 }
 
+void UScene::DuplicateSubObjects()
+{
+	TArray<AActor*> OrigActors = Actors;
+	Actors.clear();
+	bBegunPlay = false;
+
+	for (AActor* OrigActor : OrigActors)
+	{
+		if (!OrigActor) continue;
+		AActor* ActorCopy = static_cast<AActor*>(OrigActor->Duplicate(this));
+		if (ActorCopy)
+		{
+			Actors.push_back(ActorCopy);
+		}
+	}
+}
+
 void UScene::Tick(float DeltaTime)
 {
 	if (!bBegunPlay)
